@@ -1,0 +1,38 @@
+{
+  "title": "Execution Viewer",
+  "select_session": {
+    "title": "Select Target Session",
+    "description": "Choose a session to execute the scenario on",
+    "columns": {
+      "id": "Session ID",
+      "hostname": "Hostname",
+      "os": "OS",
+      "username": "Username",
+      "arch": "Architecture",
+      "last_seen": "Last Seen"
+    },
+    "no_sessions": "No active sessions available",
+    "confirm": "Execute on Selected Session"
+  },
+  "steps_table": {
+    "step_id": "Step ID",
+    "name": "Name",
+    "status": "Status",
+    "duration": "Duration"
+  },
+  "toolbar": {
+    "cancel": "Cancel Execution",
+    "stream_status": "Stream"
+  },
+  "log_drawer": {
+    "title": "Logs: {{stepName}}",
+    "no_logs": "No logs yet",
+    "search_placeholder": "Search logs..."
+  },
+  "started": "Execution started",
+  "completed": "Execution completed successfully",
+  "failed": "Execution failed at step \"{{step}}\"",
+  "cancelled": "Execution cancelled",
+  "stream_error": "Lost connection to execution stream",
+  "stream_reconnecting": "Reconnecting to stream..."
+}

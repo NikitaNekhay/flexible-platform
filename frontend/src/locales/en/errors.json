@@ -1,0 +1,13 @@
+{
+  "network": "Network error. Please check your connection.",
+  "unauthorized": "Session expired. Please log in again.",
+  "not_found": "The requested resource was not found.",
+  "server": "Server error. Please try again later.",
+  "unknown": "An unexpected error occurred.",
+  "chain_not_found": "Scenario not found.",
+  "session_not_found": "Session not found or disconnected.",
+  "execution_not_found": "Execution not found.",
+  "yaml_parse": "Failed to parse YAML: {{error}}",
+  "file_upload": "File upload failed: {{error}}",
+  "validation": "Validation error: {{error}}"
+}

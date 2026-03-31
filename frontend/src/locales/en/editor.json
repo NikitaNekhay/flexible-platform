@@ -1,0 +1,93 @@
+{
+  "title": "Scenario Editor",
+  "new_scenario": "New Scenario",
+  "edit_scenario": "Edit Scenario",
+  "steps_table": {
+    "order": "#",
+    "id": "Step ID",
+    "name": "Name",
+    "action_type": "Action Type",
+    "depends_on": "Depends On",
+    "on_fail": "On Fail",
+    "actions": "Actions"
+  },
+  "toolbar": {
+    "add_step": "Add Step",
+    "import_yaml": "Import YAML",
+    "export_yaml": "Export YAML",
+    "validate": "Validate (Dry Run)",
+    "save": "Save Scenario"
+  },
+  "step_modal": {
+    "title_new": "New Step",
+    "title_edit": "Edit Step",
+    "tab_general": "General",
+    "tab_action": "Action",
+    "tab_conditions": "Conditions",
+    "tab_output": "Output Vars",
+    "field_id": "Step ID",
+    "field_name": "Step Name",
+    "field_depends_on": "Depends On",
+    "field_on_fail": "On Failure",
+    "placeholder_id": "e.g. step_1",
+    "placeholder_name": "e.g. Run discovery command"
+  },
+  "action_types": {
+    "command": "Command",
+    "atomic": "Atomic Red Team",
+    "binary": "Binary",
+    "upload": "Upload",
+    "sliver_rpc": "Sliver RPC",
+    "python": "Python Script",
+    "probe": "Probe"
+  },
+  "on_fail_options": {
+    "stop": "Stop Chain",
+    "continue": "Continue",
+    "skip_dependents": "Skip Dependents"
+  },
+  "atomic_selector": {
+    "title": "Select Atomic Test",
+    "search_placeholder": "Search by technique ID or name...",
+    "technique_id": "Technique ID",
+    "technique_name": "Name",
+    "tactic": "Tactic",
+    "platforms": "Platforms",
+    "tests": "Tests"
+  },
+  "yaml_import": {
+    "title": "Import YAML",
+    "paste_yaml": "Paste or edit YAML below",
+    "parse": "Parse",
+    "parse_success": "Parsed successfully: {{count}} steps",
+    "parse_error": "YAML parse error",
+    "import": "Import"
+  },
+  "title_edit": "Edit Scenario",
+  "title_new": "New Scenario",
+  "fields": {
+    "name": "Scenario Name",
+    "description": "Description",
+    "tags": "Tags",
+    "mitre_tactics": "MITRE ATT&CK Tactics"
+  },
+  "dag_viewer": {
+    "title": "DAG Visualization",
+    "show": "Show DAG",
+    "hide": "Hide DAG",
+    "nodes": "nodes"
+  },
+  "validation": {
+    "valid": "Scenario is valid",
+    "invalid": "Validation failed",
+    "cycle_detected": "Cycle detected involving steps: {{steps}}",
+    "missing_dep": "Step \"{{stepId}}\" depends on non-existent step \"{{dep}}\"",
+    "required_field": "{{field}} is required",
+    "duplicate_id": "Step ID \"{{id}}\" is already in use",
+    "dry_run_success": "Dry run passed successfully",
+    "dry_run_failed": "Dry run failed: {{error}}"
+  },
+  "unsaved_changes": "You have unsaved changes. Discard and leave?",
+  "scenario_saved": "Scenario saved successfully",
+  "scenario_created": "Scenario created successfully"
+}

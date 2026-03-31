@@ -1,0 +1,51 @@
+{
+  "app_title": "Attack Scenario Platform",
+  "nav": {
+    "dashboard": "Dashboard",
+    "scenarios": "Scenarios",
+    "editor": "Editor",
+    "execution": "Execution"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "clone": "Clone",
+    "execute": "Execute",
+    "create": "Create",
+    "import": "Import",
+    "export": "Export",
+    "validate": "Validate",
+    "back": "Back",
+    "confirm": "Confirm",
+    "close": "Close",
+    "add": "Add",
+    "remove": "Remove",
+    "search": "Search"
+  },
+  "status": {
+    "pending": "Pending",
+    "running": "Running",
+    "done": "Done",
+    "failed": "Failed",
+    "skipped": "Skipped",
+    "cancelled": "Cancelled",
+    "connecting": "Connecting",
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "error": "Error"
+  },
+  "roles": {
+    "mentor": "Mentor",
+    "viewer": "Viewer"
+  },
+  "language": {
+    "en": "English",
+    "ru": "Russian",
+    "toggle": "Language"
+  },
+  "confirm_delete": "Are you sure you want to delete this item?",
+  "no_data": "No data available",
+  "loading": "Loading..."
+}

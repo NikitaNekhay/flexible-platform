@@ -1,0 +1,93 @@
+{
+  "title": "Редактор Сценария",
+  "new_scenario": "Новый Сценарий",
+  "edit_scenario": "Редактирование Сценария",
+  "steps_table": {
+    "order": "#",
+    "id": "ID Шага",
+    "name": "Название",
+    "action_type": "Тип Действия",
+    "depends_on": "Зависит от",
+    "on_fail": "При Ошибке",
+    "actions": "Действия"
+  },
+  "toolbar": {
+    "add_step": "Добавить Шаг",
+    "import_yaml": "Импорт YAML",
+    "export_yaml": "Экспорт YAML",
+    "validate": "Проверить (Dry Run)",
+    "save": "Сохранить Сценарий"
+  },
+  "step_modal": {
+    "title_new": "Новый Шаг",
+    "title_edit": "Редактирование Шага",
+    "tab_general": "Основное",
+    "tab_action": "Действие",
+    "tab_conditions": "Условия",
+    "tab_output": "Переменные",
+    "field_id": "ID Шага",
+    "field_name": "Название Шага",
+    "field_depends_on": "Зависит от",
+    "field_on_fail": "При Ошибке",
+    "placeholder_id": "напр. step_1",
+    "placeholder_name": "напр. Запуск команды разведки"
+  },
+  "action_types": {
+    "command": "Команда",
+    "atomic": "Atomic Red Team",
+    "binary": "Бинарный файл",
+    "upload": "Загрузка файла",
+    "sliver_rpc": "Sliver RPC",
+    "python": "Python скрипт",
+    "probe": "Проверка"
+  },
+  "on_fail_options": {
+    "stop": "Остановить цепочку",
+    "continue": "Продолжить",
+    "skip_dependents": "Пропустить зависимые"
+  },
+  "atomic_selector": {
+    "title": "Выбор Atomic-теста",
+    "search_placeholder": "Поиск по ID техники или названию...",
+    "technique_id": "ID Техники",
+    "technique_name": "Название",
+    "tactic": "Тактика",
+    "platforms": "Платформы",
+    "tests": "Тесты"
+  },
+  "yaml_import": {
+    "title": "Импорт YAML",
+    "paste_yaml": "Вставьте или отредактируйте YAML",
+    "parse": "Разобрать",
+    "parse_success": "Успешно разобрано: {{count}} шагов",
+    "parse_error": "Ошибка разбора YAML",
+    "import": "Импортировать"
+  },
+  "title_edit": "Редактирование сценария",
+  "title_new": "Новый сценарий",
+  "fields": {
+    "name": "Название сценария",
+    "description": "Описание",
+    "tags": "Теги",
+    "mitre_tactics": "Тактики MITRE ATT&CK"
+  },
+  "dag_viewer": {
+    "title": "Визуализация DAG",
+    "show": "Показать DAG",
+    "hide": "Скрыть DAG",
+    "nodes": "узлов"
+  },
+  "validation": {
+    "valid": "Сценарий валиден",
+    "invalid": "Ошибка валидации",
+    "cycle_detected": "Обнаружен цикл в шагах: {{steps}}",
+    "missing_dep": "Шаг \"{{stepId}}\" зависит от несуществующего шага \"{{dep}}\"",
+    "required_field": "Поле {{field}} обязательно",
+    "duplicate_id": "ID шага \"{{id}}\" уже используется",
+    "dry_run_success": "Проверка пройдена успешно",
+    "dry_run_failed": "Проверка не пройдена: {{error}}"
+  },
+  "unsaved_changes": "Есть несохранённые изменения. Покинуть страницу?",
+  "scenario_saved": "Сценарий сохранён",
+  "scenario_created": "Сценарий создан"
+}
