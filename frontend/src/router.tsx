@@ -7,6 +7,8 @@ const DashboardPage = lazy(() => import('@/pages/Dashboard'));
 const ScenariosListPage = lazy(() => import('@/pages/ScenariosList'));
 const ScenarioEditorPage = lazy(() => import('@/pages/ScenarioEditor'));
 const ExecutionViewerPage = lazy(() => import('@/pages/ExecutionViewer'));
+const ExecutionsListPage = lazy(() => import('@/pages/ExecutionsList'));
+const SessionsListPage = lazy(() => import('@/pages/SessionsList'));
 
 function SuspenseWrapper({ children }: { children: React.ReactNode }) {
   return <Suspense fallback={<LoadingOverlay visible />}>{children}</Suspense>;
@@ -46,6 +48,22 @@ export const router = createBrowserRouter([
         element: (
           <SuspenseWrapper>
             <ScenarioEditorPage />
+          </SuspenseWrapper>
+        ),
+      },
+      {
+        path: 'sessions',
+        element: (
+          <SuspenseWrapper>
+            <SessionsListPage />
+          </SuspenseWrapper>
+        ),
+      },
+      {
+        path: 'executions',
+        element: (
+          <SuspenseWrapper>
+            <ExecutionsListPage />
           </SuspenseWrapper>
         ),
       },

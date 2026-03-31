@@ -1,4 +1,4 @@
-import { TextInput, Select, NumberInput, Stack } from '@mantine/core';
+import { TextInput, Select, Stack } from '@mantine/core';
 import type { ProbeAction } from '@/types';
 
 interface ProbeFormProps {
@@ -10,31 +10,41 @@ export function ProbeForm({ value, onChange }: ProbeFormProps) {
   return (
     <Stack gap="sm">
       <Select
-        label="Probe Type"
-        data={['tcp', 'http', 'process_exists', 'file_exists', 'dns']}
-        value={value.probe_type}
-        onChange={(v) => onChange({ ...value, probe_type: v ?? '' })}
+        label="Kind"
+        data={['os', 'kernel', 'arch', 'software_exists', 'software_version']}
+        value={value.probe.kind}
+        onChange={(v) =>
+          onChange({ ...value, probe: { ...value.probe, kind: v ?? '' } })
+        }
         allowDeselect={false}
-        placeholder="Select probe type"
+        placeholder="Select probe kind"
       />
+      <Select
+        label="Platform"
+        data={['linux', 'windows', 'darwin']}
+        value={value.probe.platform ?? 'linux'}
+        onChange={(v) =>
+          onChange({ ...value, probe: { ...value.probe, platform: v ?? 'linux' } })
+        }
+        allowDeselect={false}
+      />
+      {(value.probe.kind === 'software_exists' || value.probe.kind === 'software_version') && (
+        <TextInput
+          label="Software"
+          value={value.probe.software ?? ''}
+          onChange={(e) =>
+            onChange({ ...value, probe: { ...value.probe, software: e.currentTarget.value } })
+          }
+          placeholder="e.g. python3, curl"
+        />
+      )}
       <TextInput
-        label="Target"
-        value={value.target}
-        onChange={(e) => onChange({ ...value, target: e.currentTarget.value })}
-        placeholder="e.g. 192.168.1.1:8080 or http://target/health"
-      />
-      <TextInput
-        label="Expected Result"
-        value={value.expected_result}
-        onChange={(e) => onChange({ ...value, expected_result: e.currentTarget.value })}
-        placeholder="e.g. 200 or true"
-      />
-      <NumberInput
-        label="Timeout (seconds)"
-        value={value.timeout_seconds}
-        onChange={(v) => onChange({ ...value, timeout_seconds: Number(v) })}
-        min={1}
-        max={300}
+        label="Match (regex, optional)"
+        value={value.probe.match ?? ''}
+        onChange={(e) =>
+          onChange({ ...value, probe: { ...value.probe, match: e.currentTarget.value } })
+        }
+        placeholder="e.g. ^5\\..*"
       />
     </Stack>
   );

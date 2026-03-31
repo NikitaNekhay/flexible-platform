@@ -32,9 +32,9 @@ export default function ScenarioEditorPage() {
           chainId: chain.id,
           name: chain.name,
           description: chain.description,
-          tags: chain.tags,
-          mitreTactics: chain.mitre_tactics,
-          steps: chain.steps,
+          tags: chain.tags ?? [],
+          mitreTactics: chain.mitre_tactics ?? [],
+          steps: chain.steps ?? [],
         }),
       );
     } else if (!id) {

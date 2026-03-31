@@ -3,6 +3,8 @@
   "nav": {
     "dashboard": "Dashboard",
     "scenarios": "Scenarios",
+    "sessions": "Sessions",
+    "executions": "Executions",
     "editor": "Editor",
     "execution": "Execution"
   },

@@ -24,19 +24,19 @@ interface StepEditorInnerProps {
 function getDefaultAction(type: ActionType): StepAction {
   switch (type) {
     case 'command':
-      return { type: 'command', executor: '', command: '' };
+      return { type: 'command', command: { interpreter: 'sh', cmd: '' } };
     case 'atomic':
-      return { type: 'atomic', technique_id: '', test_index: 0, arguments: {} };
+      return { type: 'atomic', atomic_ref: { id: '', test: 0, args: {} } };
     case 'binary':
-      return { type: 'binary', source: 'url', destination_path: '', execute_after_upload: false };
+      return { type: 'binary', binary: { remote_path: '', platform: 'linux' } };
     case 'upload':
-      return { type: 'upload', source: 'url', destination_path: '' };
+      return { type: 'upload', upload: { remote_path: '' } };
     case 'sliver_rpc':
       return { type: 'sliver_rpc', rpc_method: '', params: {} };
     case 'python':
-      return { type: 'python', script: '', args: [] };
+      return { type: 'python', python: { inline: '' } };
     case 'probe':
-      return { type: 'probe', probe_type: 'tcp', target: '', expected_result: '', timeout_seconds: 30 };
+      return { type: 'probe', probe: { kind: 'os', platform: 'linux' } };
   }
 }
 

@@ -24,6 +24,18 @@ const initialState: ExecutionState = {
   selectedStepId: null,
 };
 
+function ensureStep(state: ExecutionState, stepId: string): StepExecutionStatus {
+  if (!state.stepsStatus[stepId]) {
+    state.stepsStatus[stepId] = {
+      step_id: stepId,
+      step_name: stepId,
+      status: 'pending',
+      logs: [],
+    };
+  }
+  return state.stepsStatus[stepId];
+}
+
 const executionSlice = createSlice({
   name: 'execution',
   initialState,
@@ -69,53 +81,48 @@ const executionSlice = createSlice({
       switch (event.event) {
         case 'step_start': {
           state.status = 'running';
-          if (!state.stepsStatus[event.step_id]) {
-            state.stepsStatus[event.step_id] = {
-              step_id: event.step_id,
-              step_name: event.step_name,
-              status: 'running',
-              started_at: event.timestamp,
-              logs: [],
-            };
-          } else {
-            state.stepsStatus[event.step_id].status = 'running';
-            state.stepsStatus[event.step_id].started_at = event.timestamp;
-          }
+          const step = ensureStep(state, event.step_id);
+          step.status = 'running';
+          step.started_at = event.timestamp;
+          if (event.step_name) step.step_name = event.step_name;
           break;
         }
         case 'step_done': {
-          const step = state.stepsStatus[event.step_id];
-          if (step) {
-            step.status = 'done';
-            step.exit_code = event.exit_code;
-            step.duration_ms = event.duration_ms;
-            step.finished_at = event.timestamp;
-          }
+          const step = ensureStep(state, event.step_id);
+          step.status = 'done';
+          step.exit_code = event.exit_code;
+          step.duration_ms = event.duration_ms;
+          step.finished_at = event.timestamp;
+          if (event.stdout) step.logs.push(event.stdout);
+          if (event.stderr) step.logs.push(`[stderr] ${event.stderr}`);
           break;
         }
         case 'step_failed': {
-          const step = state.stepsStatus[event.step_id];
-          if (step) {
-            step.status = 'failed';
-            step.exit_code = event.exit_code;
-            step.duration_ms = event.duration_ms;
-            step.finished_at = event.timestamp;
-          }
+          const step = ensureStep(state, event.step_id);
+          step.status = 'failed';
+          step.exit_code = event.exit_code;
+          step.duration_ms = event.duration_ms;
+          step.finished_at = event.timestamp;
+          if (event.stdout) step.logs.push(event.stdout);
+          if (event.stderr) step.logs.push(`[stderr] ${event.stderr}`);
+          if (event.error) step.logs.push(`[error] ${event.error}`);
+          break;
+        }
+        case 'step_skipped': {
+          const step = ensureStep(state, event.step_id);
+          step.status = 'skipped';
+          if (event.message) step.logs.push(`[skipped] ${event.message}`);
           break;
         }
         case 'step_log': {
-          const step = state.stepsStatus[event.step_id];
-          if (step) {
-            step.logs.push(event.line);
-          } else {
-            // Step log arrived before step_start (shouldn't happen, but handle gracefully)
-            state.stepsStatus[event.step_id] = {
-              step_id: event.step_id,
-              step_name: event.step_id,
-              status: 'running',
-              logs: [event.line],
-            };
-          }
+          // Replay event — contains the full stored step result
+          const step = ensureStep(state, event.step_id);
+          step.status = (event.status as StepExecutionStatus['status']) ?? step.status;
+          step.exit_code = event.exit_code;
+          step.duration_ms = event.duration_ms;
+          if (event.stdout) step.logs.push(event.stdout);
+          if (event.stderr) step.logs.push(`[stderr] ${event.stderr}`);
+          if (event.error) step.logs.push(`[error] ${event.error}`);
           break;
         }
         case 'chain_done': {
@@ -124,6 +131,14 @@ const executionSlice = createSlice({
         }
         case 'chain_failed': {
           state.status = 'failed';
+          break;
+        }
+        case 'done': {
+          // Stream close signal — set final status if not already set
+          if (state.status === 'running' || state.status === 'pending') {
+            state.status = event.status === 'failed' ? 'failed' : 'done';
+          }
+          state.streamStatus = 'idle';
           break;
         }
       }

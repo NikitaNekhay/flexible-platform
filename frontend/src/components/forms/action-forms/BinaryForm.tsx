@@ -1,5 +1,4 @@
-import { TextInput, Switch, SegmentedControl, FileInput, Stack, Text } from '@mantine/core';
-import { IconUpload } from '@tabler/icons-react';
+import { TextInput, Switch, SegmentedControl, Select, Stack, Text } from '@mantine/core';
 import type { BinaryAction } from '@/types';
 
 interface BinaryFormProps {
@@ -8,6 +7,8 @@ interface BinaryFormProps {
 }
 
 export function BinaryForm({ value, onChange }: BinaryFormProps) {
+  const hasUrl = !!value.binary.url;
+
   return (
     <Stack gap="sm">
       <div>
@@ -15,44 +16,72 @@ export function BinaryForm({ value, onChange }: BinaryFormProps) {
         <SegmentedControl
           data={[
             { label: 'URL', value: 'url' },
-            { label: 'Upload', value: 'upload' },
+            { label: 'Embedded (base64)', value: 'data' },
           ]}
-          value={value.source}
-          onChange={(v) => onChange({ ...value, source: v as 'url' | 'upload' })}
+          value={hasUrl || !value.binary.data ? 'url' : 'data'}
+          onChange={(v) => {
+            if (v === 'url') {
+              onChange({ ...value, binary: { ...value.binary, data: undefined } });
+            } else {
+              onChange({ ...value, binary: { ...value.binary, url: undefined } });
+            }
+          }}
         />
       </div>
 
-      {value.source === 'url' ? (
+      {(hasUrl || !value.binary.data) ? (
         <TextInput
           label="URL"
-          value={value.url ?? ''}
-          onChange={(e) => onChange({ ...value, url: e.currentTarget.value })}
+          value={value.binary.url ?? ''}
+          onChange={(e) =>
+            onChange({ ...value, binary: { ...value.binary, url: e.currentTarget.value } })
+          }
           placeholder="https://..."
         />
       ) : (
-        <FileInput
-          label="Binary File"
-          placeholder="Select file"
-          leftSection={<IconUpload size={16} />}
-          onChange={() => {
-            // File upload would set file_ref after uploading via API
-            // For now just mark the source
-          }}
+        <TextInput
+          label="Base64 Data"
+          value={value.binary.data ?? ''}
+          onChange={(e) =>
+            onChange({ ...value, binary: { ...value.binary, data: e.currentTarget.value } })
+          }
+          placeholder="Base64-encoded binary"
         />
       )}
 
       <TextInput
-        label="Destination Path"
-        value={value.destination_path}
-        onChange={(e) => onChange({ ...value, destination_path: e.currentTarget.value })}
+        label="Remote Path"
+        value={value.binary.remote_path}
+        onChange={(e) =>
+          onChange({ ...value, binary: { ...value.binary, remote_path: e.currentTarget.value } })
+        }
         placeholder="C:\\temp\\payload.exe"
       />
 
-      <Switch
-        label="Execute after upload"
-        checked={value.execute_after_upload}
+      <TextInput
+        label="Arguments"
+        value={value.binary.args ?? ''}
         onChange={(e) =>
-          onChange({ ...value, execute_after_upload: e.currentTarget.checked })
+          onChange({ ...value, binary: { ...value.binary, args: e.currentTarget.value } })
+        }
+        placeholder="Arguments to pass when executing"
+      />
+
+      <Select
+        label="Platform"
+        data={['linux', 'windows']}
+        value={value.binary.platform ?? 'linux'}
+        onChange={(v) =>
+          onChange({ ...value, binary: { ...value.binary, platform: v ?? 'linux' } })
+        }
+        allowDeselect={false}
+      />
+
+      <Switch
+        label="Cleanup after execution"
+        checked={value.binary.cleanup ?? false}
+        onChange={(e) =>
+          onChange({ ...value, binary: { ...value.binary, cleanup: e.currentTarget.checked } })
         }
       />
     </Stack>

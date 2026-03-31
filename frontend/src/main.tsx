@@ -13,11 +13,13 @@ import './theme/globalStyles.css';
 import { StepEditorModal } from '@/pages/ScenarioEditor/modals/StepEditorModal';
 import { AtomicSelectorModal } from '@/pages/ScenarioEditor/modals/AtomicSelectorModal';
 import { YAMLImportModal } from '@/pages/ScenarioEditor/modals/YAMLImportModal';
+import { SessionSelectorModal } from '@/pages/ExecutionViewer/SessionSelectorModal';
 
 const contextModals = {
   stepEditor: StepEditorModal,
   atomicSelector: AtomicSelectorModal,
   yamlImport: YAMLImportModal,
+  sessionSelector: SessionSelectorModal,
 } as Record<string, React.FC<any>>;
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

@@ -38,9 +38,11 @@ export type {
   SSEStepStart,
   SSEStepDone,
   SSEStepFailed,
+  SSEStepSkipped,
   SSEStepLog,
   SSEChainDone,
   SSEChainFailed,
+  SSEDone,
   SSEEvent,
 } from './sse';
 

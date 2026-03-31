@@ -10,7 +10,7 @@ export function chainToYAML(chain: Chain | ChainCreatePayload): string {
     description: chain.description,
     tags: chain.tags,
     mitre_tactics: chain.mitre_tactics,
-    steps: chain.steps.map((step) => ({
+    steps: (chain.steps ?? []).map((step) => ({
       id: step.id,
       name: step.name,
       depends_on: step.depends_on,
@@ -45,7 +45,7 @@ export function yamlToChain(yamlString: string): ChainCreatePayload {
         depends_on: Array.isArray(s.depends_on)
           ? s.depends_on.map(String)
           : [],
-        action: s.action ?? { type: 'command' as const, executor: '', command: '' },
+        action: s.action ?? { type: 'command' as const, command: { interpreter: 'sh', cmd: '' } },
         conditions: Array.isArray(s.conditions) ? s.conditions : [],
         output_vars: Array.isArray(s.output_vars) ? s.output_vars : [],
         on_fail: (s.on_fail as Step['on_fail']) || 'stop',

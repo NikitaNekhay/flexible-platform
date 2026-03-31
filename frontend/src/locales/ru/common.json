@@ -3,6 +3,8 @@
   "nav": {
     "dashboard": "Главная",
     "scenarios": "Сценарии",
+    "sessions": "Сессии",
+    "executions": "Выполнения",
     "editor": "Редактор",
     "execution": "Выполнение"
   },

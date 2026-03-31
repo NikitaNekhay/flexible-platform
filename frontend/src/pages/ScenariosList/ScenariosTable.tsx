@@ -60,7 +60,7 @@ export function ScenariosTable({ onExecute }: ScenariosTableProps) {
         header: 'Tags',
         cell: (info) => (
           <Group gap={4}>
-            {info.getValue().map((tag) => (
+            {(info.getValue() ?? []).map((tag) => (
               <Badge key={tag} size="xs" variant="outline">
                 {tag}
               </Badge>
@@ -73,7 +73,7 @@ export function ScenariosTable({ onExecute }: ScenariosTableProps) {
         header: 'MITRE Tactics',
         cell: (info) => (
           <Group gap={4}>
-            {info.getValue().map((tactic) => (
+            {(info.getValue() ?? []).map((tactic) => (
               <MitreTacticBadge key={tactic} tactic={tactic} />
             ))}
           </Group>
@@ -117,9 +117,9 @@ export function ScenariosTable({ onExecute }: ScenariosTableProps) {
                     const result = await createChain({
                       name: `Copy of ${chain.name}`,
                       description: chain.description,
-                      tags: chain.tags,
-                      mitre_tactics: chain.mitre_tactics,
-                      steps: chain.steps,
+                      tags: chain.tags ?? [],
+                      mitre_tactics: chain.mitre_tactics ?? [],
+                      steps: chain.steps ?? [],
                     });
                     if ('data' in result) {
                       notifications.show({

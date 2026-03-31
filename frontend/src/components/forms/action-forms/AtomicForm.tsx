@@ -24,30 +24,43 @@ export function AtomicForm({ value, onChange }: AtomicFormProps) {
           }
           onChange({
             ...value,
-            technique_id: atomic.technique_id,
-            test_index: testIndex,
-            arguments: defaultArgs,
+            atomic_ref: {
+              ...value.atomic_ref,
+              id: atomic.technique_id,
+              test: testIndex,
+              args: defaultArgs,
+            },
           });
         },
       },
     });
   };
 
-  const argEntries = Object.entries(value.arguments ?? {});
+  const argEntries = Object.entries(value.atomic_ref.args ?? {});
 
   return (
     <Stack gap="sm">
       <Group grow>
         <TextInput
           label="Technique ID"
-          value={value.technique_id}
-          onChange={(e) => onChange({ ...value, technique_id: e.currentTarget.value })}
+          value={value.atomic_ref.id}
+          onChange={(e) =>
+            onChange({
+              ...value,
+              atomic_ref: { ...value.atomic_ref, id: e.currentTarget.value },
+            })
+          }
           placeholder="e.g. T1059.001"
         />
         <NumberInput
           label="Test Index"
-          value={value.test_index}
-          onChange={(v) => onChange({ ...value, test_index: Number(v) })}
+          value={value.atomic_ref.test}
+          onChange={(v) =>
+            onChange({
+              ...value,
+              atomic_ref: { ...value.atomic_ref, test: Number(v) },
+            })
+          }
           min={0}
         />
       </Group>
@@ -64,7 +77,10 @@ export function AtomicForm({ value, onChange }: AtomicFormProps) {
               onChange={(e) =>
                 onChange({
                   ...value,
-                  arguments: { ...value.arguments, [key]: e.currentTarget.value },
+                  atomic_ref: {
+                    ...value.atomic_ref,
+                    args: { ...value.atomic_ref.args, [key]: e.currentTarget.value },
+                  },
                 })
               }
             />

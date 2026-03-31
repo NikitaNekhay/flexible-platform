@@ -6,6 +6,8 @@ import { formatDuration } from '@/utils/formatUtils';
 
 export function HealthCard() {
   const { t } = useTranslation();
+
+
   const { data, isLoading, isError } = useGetHealthQuery(undefined, {
     pollingInterval: 30000,
   });

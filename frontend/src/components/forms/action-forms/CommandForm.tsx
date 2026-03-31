@@ -10,17 +10,21 @@ export function CommandForm({ value, onChange }: CommandFormProps) {
   return (
     <>
       <Select
-        label="Executor"
+        label="Interpreter"
         data={['cmd', 'powershell', 'bash', 'sh']}
-        value={value.executor}
-        onChange={(v) => onChange({ ...value, executor: v ?? '' })}
+        value={value.command.interpreter}
+        onChange={(v) =>
+          onChange({ ...value, command: { ...value.command, interpreter: v ?? '' } })
+        }
         allowDeselect={false}
-        placeholder="Select executor"
+        placeholder="Select interpreter"
       />
       <Textarea
         label="Command"
-        value={value.command}
-        onChange={(e) => onChange({ ...value, command: e.currentTarget.value })}
+        value={value.command.cmd}
+        onChange={(e) =>
+          onChange({ ...value, command: { ...value.command, cmd: e.currentTarget.value } })
+        }
         minRows={3}
         autosize
         placeholder="Enter command to execute"

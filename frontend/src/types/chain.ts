@@ -9,32 +9,41 @@ export type ActionType =
 
 export interface CommandAction {
   type: 'command';
-  executor: string;
-  command: string;
+  command: {
+    interpreter: string;
+    cmd: string;
+  };
 }
 
 export interface AtomicAction {
   type: 'atomic';
-  technique_id: string;
-  test_index: number;
-  arguments: Record<string, string>;
+  atomic_ref: {
+    id: string;
+    test: number;
+    name?: string;
+    guid?: string;
+    args: Record<string, string>;
+  };
 }
 
 export interface BinaryAction {
   type: 'binary';
-  source: 'url' | 'upload';
-  url?: string;
-  file_ref?: string;
-  destination_path: string;
-  execute_after_upload: boolean;
+  binary: {
+    data?: string;
+    url?: string;
+    remote_path: string;
+    args?: string;
+    platform?: string;
+    cleanup?: boolean;
+  };
 }
 
 export interface UploadAction {
   type: 'upload';
-  source: 'url' | 'upload';
-  url?: string;
-  file_ref?: string;
-  destination_path: string;
+  upload: {
+    local_path?: string;
+    remote_path: string;
+  };
 }
 
 export interface SliverRpcAction {
@@ -45,16 +54,22 @@ export interface SliverRpcAction {
 
 export interface PythonAction {
   type: 'python';
-  script: string;
-  args?: string[];
+  python: {
+    script?: string;
+    inline?: string;
+    args?: string[];
+    env?: Record<string, string>;
+  };
 }
 
 export interface ProbeAction {
   type: 'probe';
-  probe_type: string;
-  target: string;
-  expected_result: string;
-  timeout_seconds: number;
+  probe: {
+    kind: string;
+    software?: string;
+    match?: string;
+    platform?: string;
+  };
 }
 
 export type StepAction =

@@ -23,8 +23,7 @@ const stepSchema = z.object({
 
 const DEFAULT_ACTION: StepAction = {
   type: 'command',
-  executor: '',
-  command: '',
+  command: { interpreter: 'sh', cmd: '' },
 };
 
 export function useStepForm(initial?: Step) {

@@ -4,9 +4,11 @@ const SSE_EVENTS = [
   'step_start',
   'step_done',
   'step_failed',
+  'step_skipped',
   'step_log',
   'chain_done',
   'chain_failed',
+  'done',
 ] as const;
 
 const MAX_RECONNECT = 3;

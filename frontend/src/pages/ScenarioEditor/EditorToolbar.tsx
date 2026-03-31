@@ -84,7 +84,7 @@ export function EditorToolbar() {
       notifications.show({ title: 'Save first', message: 'Save the scenario before validating', color: 'yellow' });
       return;
     }
-    const result = await executeChain({ id: chainId, body: { session_id: '', dry_run: true } });
+    const result = await executeChain({ id: chainId, body: { session_id: 'dry-run', dry_run: true } });
     if ('data' in result) {
       notifications.show({ title: t('editor:validation.dry_run_success'), message: '', color: 'green' });
     } else {

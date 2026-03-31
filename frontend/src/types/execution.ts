@@ -10,6 +10,9 @@ export interface StepExecutionStatus {
   finished_at?: string;
   duration_ms?: number;
   exit_code?: number;
+  stdout?: string;
+  stderr?: string;
+  error?: string;
   logs: string[];
 }
 
@@ -18,6 +21,7 @@ export interface Execution {
   chain_id: string;
   session_id: string;
   status: ExecutionStatusValue;
+  error?: string;
   started_at: string;
   finished_at?: string;
   steps: StepExecutionStatus[];
