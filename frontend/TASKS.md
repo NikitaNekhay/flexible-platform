@@ -53,8 +53,8 @@
 - `ScenarioEditor`: metadata form + steps table side-by-side on desktop, stacked on mobile
 - ~~`ExecutionStreamLog`: terminal height now responsive (`clamp(200px, 40vh, 500px)`)~~
 
-### 2.3 Navigation & breadcrumbs
-- Add `<Breadcrumbs>` to `ScenarioEditor` and `ExecutionViewer` pages (e.g., `Scenarios > My Scenario > Edit`)
+### 2.3 Navigation & breadcrumbs (partial) ✅
+- ~~Add `<Breadcrumbs>` to `ScenarioEditor` and `ExecutionViewer` pages~~
 - Add keyboard shortcut hints in navbar tooltips
 - Highlight active nav item properly (verify `useLocation` match logic)
 
@@ -64,10 +64,10 @@
 - Add column resizing or at minimum responsive column hiding on small screens
 - `ExecutionStepsTable`: add exit code column, show `stdout` preview on hover (tooltip)
 
-### 2.5 Toast & notification improvements
-- Current error notifications auto-close in 8s — critical errors (execution failures) should be persistent
-- Add success toasts for: scenario saved, scenario deleted, execution started, chain cloned
-- Deduplicate identical error notifications (e.g., repeated polling failures)
+### 2.5 Toast & notification improvements ✅
+- ~~Critical errors (5xx, execution/cancel failures) now persistent (autoClose: false)~~
+- ~~Success toasts already exist for save, delete, clone, execute~~
+- ~~Deduplicate identical error notifications (10s dedup window in `rtkErrorMiddleware`)~~
 
 ### 2.6 Execution viewer UX (partial) ✅
 - Add auto-scroll toggle for `ExecutionStreamLog` terminal (scroll lock button)
@@ -90,16 +90,16 @@
 
 ## 3. Architecture & Code Quality
 
-### 3.1 Type safety improvements
-- `main.tsx` line 23: `as Record<string, React.FC<any>>` — create typed `ContextModalMap` interface for each modal's `innerProps`
-- All action forms accept `value: StepAction` and cast internally — create discriminated union guard functions (`isCommandAction`, `isAtomicAction`, etc.)
+### 3.1 Type safety improvements (partial) ✅
+- ~~`main.tsx`: documented cast reason, created `src/types/modals.ts` with typed `ContextModalMap` interface~~
+- ~~Created `src/utils/actionGuards.ts` with discriminated union guard functions (`isCommandAction`, etc.)~~
 - `sseEventReceived` payload is `SSEEvent` union — add runtime validation (Zod) for SSE data before dispatch
 - `executionsApi.ts` normalization: replace inline field mapping with a Zod schema + `transform`
 
-### 3.2 Remove dead code
-- `scenariosSlice.ts`: `selectedScenarioId` state is set but never consumed — remove or implement
-- `SearchAddon` loaded in `TerminalPanel` but no search UI exposed — remove addon or add Ctrl+F search
-- `usePermissions` hook: verify it's actually consumed; if roles aren't enforced by backend, remove
+### ~~3.2 Remove dead code~~ ✅
+- ~~`scenariosSlice.ts`: deleted entirely — `selectedScenarioId` was never consumed~~
+- ~~`SearchAddon` removed from `TerminalPanel` — no search UI exposed~~
+- ~~`usePermissions` hook: verified it's consumed in 3 components — kept~~
 - Check for any unused imports across all files (`eslint no-unused-imports` rule)
 
 ### ~~3.3 Error handling gaps~~ ✅
@@ -134,9 +134,10 @@
 - On reconnect success, re-fetch execution state from REST to sync missed events
 - ~~Handle browser `offline`/`online` events — auto-pause/resume SSE~~
 
-### 4.2 Form data persistence
-- `ScenarioEditor`: if browser crashes mid-edit, all work is lost — persist draft to `sessionStorage`
-- Restore draft on page load if unsaved data exists (with "Restore draft?" prompt)
+### ~~4.2 Form data persistence~~ ✅
+- ~~`ScenarioEditor`: draft auto-persisted to `sessionStorage` via `useEditorDraft` hook~~
+- ~~Restore draft on page load with notification (drafts expire after 1 hour)~~
+- ~~Clean draft cleared on unmount when not dirty~~
 
 ### ~~4.3 Backend null safety~~ ✅
 - ~~Better: add `transformResponse` in `chainsApi` that normalizes `tags: null` → `tags: []`, `steps: null` → `steps: []` at the API layer instead of patching every consumer~~
@@ -189,10 +190,10 @@
 - Step drag-and-drop (`dnd-kit`): verify keyboard DnD works (dnd-kit supports it, but may need `KeyboardSensor` added)
 - Modal focus trap: Mantine handles this, but verify with screen reader
 
-### 6.2 Screen reader support
-- Add `aria-label` to icon-only buttons (e.g., step delete, edit, clone icons)
-- `StatusBadge`: add `aria-live="polite"` for status changes in execution viewer
-- `TerminalPanel`: add `role="log"` and `aria-label="Execution output"` to container
+### 6.2 Screen reader support ✅
+- ~~Add `aria-label` to icon-only buttons (edit, execute, clone, delete, drag handle) in `ScenariosTable` and `StepsTable`~~
+- ~~`StatusBadge`: added `aria-live="polite"` and `role="status"` for status changes~~
+- ~~`TerminalPanel`: added `role="log"` and `aria-label="Execution output"` to container~~
 - Tables: ensure `<caption>` or `aria-label` on each table
 
 ### 6.3 Color contrast
@@ -235,16 +236,16 @@
 | P2 | 2.2 Responsive layout for mobile | Broader device support | Medium | partial ✅ |
 | ~~P2~~ | ~~2.4 Table sorting & pagination~~ | ~~Scales to many executions~~ | ~~Medium~~ | ✅ |
 | ~~P2~~ | ~~2.7 Unsaved changes warning~~ | ~~Prevents data loss~~ | ~~Low~~ | ✅ |
-| P2 | 3.1 Type safety improvements | Developer confidence | Medium |
+| P2 | 3.1 Type safety improvements | Developer confidence | Medium | partial ✅ |
 | ~~P2~~ | ~~3.5 API layer improvements~~ | ~~Correctness~~ | ~~Medium~~ | ✅ |
 | P2 | 5.1 Linting & formatting setup | DX consistency | Low |
 | P2 | 5.2 Testing setup + core util tests | Long-term quality | Medium |
-| P3 | 2.3 Breadcrumbs | Navigation clarity | Low |
-| P3 | 2.5 Notification improvements | Polish | Low |
+| ~~P3~~ | ~~2.3 Breadcrumbs~~ | ~~Navigation clarity~~ | ~~Low~~ | ✅ |
+| ~~P3~~ | ~~2.5 Notification improvements~~ | ~~Polish~~ | ~~Low~~ | ✅ |
 | ~~P3~~ | ~~2.8 Dark mode CSS variable migration~~ | ~~Maintainability~~ | ~~Low~~ | ✅ |
-| P3 | 3.2 Dead code removal | Cleanliness | Low |
+| ~~P3~~ | ~~3.2 Dead code removal~~ | ~~Cleanliness~~ | ~~Low~~ | ✅ |
 | P3 | 3.4 State management cleanup | Architecture purity | Medium |
 | P3 | 3.6 File reorganization | Maintainability | Low |
-| P3 | 4.2 Draft persistence in sessionStorage | Nice-to-have | Low |
-| P3 | 6.x Accessibility improvements | Compliance | Medium |
+| ~~P3~~ | ~~4.2 Draft persistence in sessionStorage~~ | ~~Nice-to-have~~ | ~~Low~~ | ✅ |
+| P3 | 6.x Accessibility improvements | Compliance | Medium | partial ✅ |
 | P3 | 7.x Security hardening | Defense in depth | Medium |

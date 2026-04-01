@@ -52,6 +52,7 @@ function SortableRow({ step, index, onEdit, onDuplicate, onDelete, canEdit }: So
           variant="subtle"
           color="gray"
           size="sm"
+          aria-label="Drag to reorder"
           style={{ cursor: 'grab' }}
           {...attributes}
           {...listeners}
@@ -99,19 +100,19 @@ function SortableRow({ step, index, onEdit, onDuplicate, onDelete, canEdit }: So
       <Table.Td>
         <Group gap={4}>
           <Tooltip label={t('actions.edit')}>
-            <ActionIcon variant="subtle" size="sm" onClick={() => onEdit(step)}>
+            <ActionIcon variant="subtle" size="sm" aria-label={t('actions.edit')} onClick={() => onEdit(step)}>
               <IconPencil size={14} />
             </ActionIcon>
           </Tooltip>
           {canEdit && (
             <>
               <Tooltip label={t('actions.clone')}>
-                <ActionIcon variant="subtle" size="sm" color="blue" onClick={() => onDuplicate(step)}>
+                <ActionIcon variant="subtle" size="sm" color="blue" aria-label={t('actions.clone')} onClick={() => onDuplicate(step)}>
                   <IconCopy size={14} />
                 </ActionIcon>
               </Tooltip>
               <Tooltip label={t('actions.delete')}>
-                <ActionIcon variant="subtle" size="sm" color="red" onClick={() => onDelete(step.id)}>
+                <ActionIcon variant="subtle" size="sm" color="red" aria-label={t('actions.delete')} onClick={() => onDelete(step.id)}>
                   <IconTrash size={14} />
                 </ActionIcon>
               </Tooltip>

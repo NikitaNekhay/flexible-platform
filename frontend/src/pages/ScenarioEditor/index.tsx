@@ -1,12 +1,13 @@
 import { useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { Stack, TextInput, Textarea, TagsInput, Title } from '@mantine/core';
+import { useParams, Link } from 'react-router-dom';
+import { Stack, TextInput, Textarea, TagsInput, Title, Breadcrumbs, Anchor } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { initEditor, resetEditor, setChainMeta } from '@/store/slices/editorSlice';
 import { useGetChainQuery } from '@/store/api/chainsApi';
 import { useDAGValidation } from '@/hooks/useDAGValidation';
 import { useUnsavedChangesWarning } from '@/hooks/useUnsavedChangesWarning';
+import { useEditorDraft } from '@/hooks/useEditorDraft';
 import { MITRE_TACTICS } from '@/utils/constants';
 import { EditorToolbar } from './EditorToolbar';
 import { StepsTable } from './StepsTable';
@@ -52,12 +53,24 @@ export default function ScenarioEditorPage() {
   // Warn before leaving with unsaved changes
   useUnsavedChangesWarning();
 
+  // Persist draft to sessionStorage for crash recovery
+  useEditorDraft(id);
+
   if (id && isLoading) {
     return <LoadingOverlay visible />;
   }
 
   return (
     <Stack gap="md">
+      <Breadcrumbs>
+        <Anchor component={Link} to="/scenarios" size="sm">
+          {t('nav.scenarios')}
+        </Anchor>
+        <Anchor size="sm" c="dimmed">
+          {id ? (chainName || t('editor:title_edit')) : t('editor:title_new')}
+        </Anchor>
+      </Breadcrumbs>
+
       <Title order={3}>
         {id ? t('editor:title_edit') : t('editor:title_new')}
       </Title>

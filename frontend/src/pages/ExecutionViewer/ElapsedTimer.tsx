@@ -9,7 +9,7 @@ interface ElapsedTimerProps {
 }
 
 export function ElapsedTimer({ startedAt, finishedAt, isRunning }: ElapsedTimerProps) {
-  const [now, setNow] = useState(Date.now());
+  const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
     if (!isRunning) return;

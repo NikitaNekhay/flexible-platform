@@ -29,7 +29,7 @@ export function StatusBadge({ status, size = 'sm' }: StatusBadgeProps) {
   const label = t(`status.${status}`, status);
 
   return (
-    <Badge color={color} variant="light" size={size}>
+    <Badge color={color} variant="light" size={size} aria-live="polite" role="status">
       {label}
     </Badge>
   );

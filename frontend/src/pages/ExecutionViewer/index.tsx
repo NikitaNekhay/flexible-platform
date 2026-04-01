@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { Stack, Title, Text } from '@mantine/core';
+import { useParams, Link } from 'react-router-dom';
+import { Stack, Title, Text, Breadcrumbs, Anchor } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
@@ -75,6 +75,15 @@ export default function ExecutionViewerPage() {
 
   return (
     <Stack gap="md">
+      <Breadcrumbs>
+        <Anchor component={Link} to="/executions" size="sm">
+          {t('nav.executions')}
+        </Anchor>
+        <Anchor size="sm" c="dimmed">
+          {executionId?.slice(0, 12)}
+        </Anchor>
+      </Breadcrumbs>
+
       <Title order={3}>{t('execution:title')}</Title>
       <ExecutionToolbar />
       <ExecutionMetaHeader />

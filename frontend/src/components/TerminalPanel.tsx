@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Terminal } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
-import { SearchAddon } from '@xterm/addon-search';
 
 interface TerminalPanelProps {
   logs: string[];
@@ -36,9 +35,7 @@ export function TerminalPanel({ logs }: TerminalPanelProps) {
     });
 
     const fitAddon = new FitAddon();
-    const searchAddon = new SearchAddon();
     terminal.loadAddon(fitAddon);
-    terminal.loadAddon(searchAddon);
 
     terminal.open(containerRef.current);
     fitAddon.fit();
@@ -70,5 +67,5 @@ export function TerminalPanel({ logs }: TerminalPanelProps) {
     writtenCountRef.current = logs.length;
   }, [logs]);
 
-  return <div ref={containerRef} className="xterm-container" />;
+  return <div ref={containerRef} className="xterm-container" role="log" aria-label="Execution output" />;
 }

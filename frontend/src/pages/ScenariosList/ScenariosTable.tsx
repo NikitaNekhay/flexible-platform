@@ -92,6 +92,7 @@ export function ScenariosTable({ onExecute }: ScenariosTableProps) {
                   <ActionIcon
                     variant="subtle"
                     color="cyan"
+                    aria-label={t('actions.edit')}
                     onClick={() => navigate(`/editor/${chain.id}`)}
                   >
                     <IconPencil size={16} />
@@ -103,6 +104,7 @@ export function ScenariosTable({ onExecute }: ScenariosTableProps) {
                   <ActionIcon
                     variant="subtle"
                     color="green"
+                    aria-label={t('actions.execute')}
                     onClick={() => onExecute(chain)}
                   >
                     <IconPlayerPlay size={16} />
@@ -113,6 +115,7 @@ export function ScenariosTable({ onExecute }: ScenariosTableProps) {
                 <ActionIcon
                   variant="subtle"
                   color="blue"
+                  aria-label={t('actions.clone')}
                   loading={isCloning}
                   onClick={async () => {
                     const result = await createChain({
@@ -140,6 +143,7 @@ export function ScenariosTable({ onExecute }: ScenariosTableProps) {
                   <ActionIcon
                     variant="subtle"
                     color="red"
+                    aria-label={t('actions.delete')}
                     loading={isDeleting}
                     onClick={() =>
                       openConfirmModal({

@@ -15,6 +15,9 @@ import { AtomicSelectorModal } from '@/pages/ScenarioEditor/modals/AtomicSelecto
 import { YAMLImportModal } from '@/pages/ScenarioEditor/modals/YAMLImportModal';
 import { SessionSelectorModal } from '@/pages/ExecutionViewer/SessionSelectorModal';
 
+// Mantine ModalsProvider requires Record<string, MantineModal> — cast is unavoidable
+// due to contravariance of innerProps. See src/types/modals.ts for typed inner props.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const contextModals = {
   stepEditor: StepEditorModal,
   atomicSelector: AtomicSelectorModal,

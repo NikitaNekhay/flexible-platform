@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Title, Stack, Table, Text, Group, Badge, TextInput, Select, Skeleton, Pagination } from '@mantine/core';
 import { IconSearch } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
@@ -54,8 +54,14 @@ export default function ExecutionsListPage() {
     [filtered, currentPage],
   );
 
-  // Reset page when filters change
-  useEffect(() => { setPage(1); }, [search, chainFilter]);
+  // Page resets to 1 when filters narrow results — currentPage clamp handles this,
+  // but we also reset the actual state so the UI shows page 1 after clearing a filter.
+  const filterKey = `${search}|${chainFilter}`;
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  if (filterKey !== prevFilterKey) {
+    setPrevFilterKey(filterKey);
+    setPage(1);
+  }
 
   return (
     <Stack gap="lg">
