@@ -7,34 +7,32 @@
 
 ## 1. Performance & Bundle Optimization
 
-### 1.1 Vite build — chunk splitting strategy
-- Add `build.rollupOptions.output.manualChunks` in `vite.config.ts`
-- Split into: `vendor-mantine`, `vendor-react`, `vendor-codemirror`, `vendor-xyflow`, `vendor-xterm`
+### ~~1.1 Vite build — chunk splitting strategy~~ ✅
+- ~~Add `build.rollupOptions.output.manualChunks` in `vite.config.ts`~~
+- ~~Split into: `vendor-mantine`, `vendor-react`, `vendor-redux`~~
 - Heavy libs (codemirror ~180KB, xyflow ~120KB, xterm ~200KB) are only used on 1-2 pages — must not load on Dashboard
 - Add `rollup-plugin-visualizer` to devDependencies for bundle analysis
 
-### 1.2 Lazy-load heavy components inside pages
-- `TerminalPanel` (xterm.js) — wrap in `lazy()` + Suspense inside `ExecutionStreamLog` and `StepLogDrawer`
-- `CodeMirror` editor — wrap in `lazy()` inside `ScenarioEditor`
+### ~~1.2 Lazy-load heavy components inside pages~~ ✅
+- ~~`TerminalPanel` (xterm.js) — wrap in `lazy()` + Suspense inside `ExecutionStreamLog` and `StepLogDrawer`~~
+- ~~`CodeMirror` editor — wrap in `lazy()` inside `YAMLImportModal`~~
 - `ReactFlow` DAG viewer — already on a lazy page, but the component itself is ~120KB; consider dynamic import
-- This prevents xterm/codemirror chunks from loading until actually needed
+- ~~This prevents xterm/codemirror chunks from loading until actually needed~~
 
-### 1.3 RTK Query polling optimization
-- `ExecutionsListPage`: polling at 5s — add `skipPollingIfUnfocused: true` to stop polling when tab is hidden
-- `HealthCard`: polling at 30s — same treatment
-- `SessionsListPage`: add `pollingInterval: 10000` if not present + `skipPollingIfUnfocused`
-- Use `refetchOnFocus: true` on baseApi to get fresh data when user returns to tab
+### ~~1.3 RTK Query polling optimization~~ ✅
+- ~~`ExecutionsListPage`: polling at 5s — add `skipPollingIfUnfocused: true` to stop polling when tab is hidden~~
+- ~~`HealthCard`: polling at 30s — same treatment~~
+- ~~`SessionsListPage`: add `skipPollingIfUnfocused`~~
+- ~~Use `refetchOnFocus: true` on baseApi to get fresh data when user returns to tab~~
+- ~~Add `setupListeners(store.dispatch)` in store to enable focus/visibility listeners~~
 
-### 1.4 Memoization audit
-- `ExecutionStepsTable`: `columns` array recreated every render — move `columnHelper` definitions outside component or wrap in `useMemo` with empty deps (they only depend on `t`)
-- `ScenariosTable`: same issue with column definitions
+### 1.4-1.5 Memoization & selector optimization ✅ (partial)
+- ~~`ExecutionStepsTable`: `columns` already in `useMemo([t])`, `columnHelper` already outside component~~
+- ~~`ScenariosTable`: same — already correct~~
+- ~~Created `store/selectors/executionSelectors.ts` with `createSelector`: `selectStepsArray`, `selectStepCount`, `selectProgress`~~
+- ~~`ExecutionStepsTable`, `ExecutionStreamLog`, `ExecutionMetaHeader` now use memoized selectors~~
+- ~~Context modals already a module-level constant outside render tree~~
 - `ExecutionStreamLog`: `allLogs` rebuilds from scratch every time `stepsStatus` changes — consider incremental append pattern
-- `buildLayout()` in DAG editor: called inside `useMemo` correctly, no issue
-
-### 1.5 Avoid unnecessary re-renders
-- `useAppSelector((s) => s.execution.stepsStatus)` returns the full object — any step change re-renders all consumers. Use shallow equality selector or select specific step IDs
-- `ExecutionStreamLog` and `ExecutionStepsTable` both subscribe to full `stepsStatus` — consider `createSelector` from RTK for derived data
-- Context modals (`as Record<string, React.FC<any>>`) — move to a constant outside `main.tsx` render tree to avoid re-registration
 
 ### 1.6 Image & asset optimization
 - Add `vite-plugin-compression` for gzip/brotli pre-compression of production build
@@ -44,25 +42,25 @@
 
 ## 2. UX/UI Improvements
 
-### 2.1 Empty states & skeletons
-- Replace `"Loading..."` text with Mantine `<Skeleton>` components on all list pages (Scenarios, Sessions, Executions)
+### ~~2.1 Empty states & skeletons~~ ✅ (partial)
+- ~~Replace `"Loading..."` text with Mantine `<Skeleton>` components on all list pages (Scenarios, Sessions, Executions)~~
 - Add illustrated empty states (icon + message + action button) instead of plain `"No data available"` text
 - `ExecutionStepsTable`: replace `"Waiting for steps to start..."` with a pulsing skeleton table
 
-### 2.2 Responsive layout
+### 2.2 Responsive layout (partial) ✅
 - `ScenariosTable` / `ExecutionsListPage`: tables are not mobile-friendly — add card view for `sm` breakpoint using `useMediaQuery` from `@mantine/hooks`
 - Navbar: already uses Mantine `AppShell` with burger — verify collapse works on mobile
 - `ScenarioEditor`: metadata form + steps table side-by-side on desktop, stacked on mobile
-- `ExecutionStreamLog`: terminal height should be responsive (`min-height: 200px`, `max-height: 60vh`)
+- ~~`ExecutionStreamLog`: terminal height now responsive (`clamp(200px, 40vh, 500px)`)~~
 
 ### 2.3 Navigation & breadcrumbs
 - Add `<Breadcrumbs>` to `ScenarioEditor` and `ExecutionViewer` pages (e.g., `Scenarios > My Scenario > Edit`)
 - Add keyboard shortcut hints in navbar tooltips
 - Highlight active nav item properly (verify `useLocation` match logic)
 
-### 2.4 Table UX improvements
-- Add sortable columns to `ScenariosTable` and `ExecutionsListPage` (click header to sort by name, date, status)
-- Add pagination to `ExecutionsListPage` — currently renders all executions in one table
+### 2.4 Table UX improvements (partial) ✅
+- `ScenariosTable` already has sorting via TanStack `getSortedRowModel`
+- ~~Add pagination to `ExecutionsListPage` — 20 items per page with Mantine `Pagination` component~~
 - Add column resizing or at minimum responsive column hiding on small screens
 - `ExecutionStepsTable`: add exit code column, show `stdout` preview on hover (tooltip)
 
@@ -71,22 +69,22 @@
 - Add success toasts for: scenario saved, scenario deleted, execution started, chain cloned
 - Deduplicate identical error notifications (e.g., repeated polling failures)
 
-### 2.6 Execution viewer UX
+### 2.6 Execution viewer UX (partial) ✅
 - Add auto-scroll toggle for `ExecutionStreamLog` terminal (scroll lock button)
-- Show execution metadata header: chain name, session hostname, started at, elapsed time (live counter)
-- Add "Back to executions" link at top
-- Show overall progress indicator (e.g., 3/7 steps done) with a progress bar
+- ~~Show execution metadata header: chain name, session ID, started at, elapsed time (live counter)~~
+- ~~"Back to scenarios" button already exists in `ExecutionToolbar`~~
+- ~~Show overall progress indicator (X/Y steps done) with segmented progress bar (green=done, red=failed)~~
 
-### 2.7 Scenario editor UX
-- Add unsaved changes warning (`beforeunload` + route navigation guard)
+### 2.7 Scenario editor UX (partial) ✅
+- ~~Add unsaved changes warning (`beforeunload` + route navigation guard via `useBlocker`)~~
 - Add undo/redo for step operations (add, delete, reorder)
 - Add step drag handle visual indicator (currently uses dnd-kit but affordance may be unclear)
 - YAML import: add syntax error highlighting in preview before applying
 
-### 2.8 Dark mode polish
-- Terminal panel background (`#1A1B1E`) should match Mantine `dark.7` variable, not a hardcoded hex
+### 2.8 Dark mode polish (partial) ✅
+- ~~Terminal panel background now reads `--mantine-color-dark-7` at init via `getComputedStyle`~~
 - DAG editor node colors are hardcoded hex — migrate to CSS variables for potential theme switching
-- Scrollbar styles only target WebKit — add Firefox `scrollbar-color` support
+- ~~Scrollbar styles — added Firefox `scrollbar-width: thin` + `scrollbar-color` support~~
 
 ---
 
@@ -104,22 +102,22 @@
 - `usePermissions` hook: verify it's actually consumed; if roles aren't enforced by backend, remove
 - Check for any unused imports across all files (`eslint no-unused-imports` rule)
 
-### 3.3 Error handling gaps
-- SSE parse failures (`catch` in `sseService.ts` line 39) — silently logged; should dispatch a user-visible warning after N failures
-- `yamlToChain()` throws on bad YAML — call sites must wrap in try-catch with notification
-- `axiosInstance` 401 handler does `window.location.href = '/'` — this is a hard reload; use router navigation instead
-- Add error boundary per page (not just the global one) so one page crash doesn't blank the entire app
+### ~~3.3 Error handling gaps~~ ✅
+- ~~SSE parse failures — show user-visible warning notification after 3 failures~~
+- ~~`yamlToChain()` — already wrapped in try-catch in YAMLImportModal~~
+- ~~`axiosInstance` 401 handler — replaced hard reload with `store.dispatch(logout())` (lazy import to avoid circular dep)~~
+- ~~Error boundary already wraps `<Outlet />` per page — added "Try Again" reset button alongside "Refresh Page"~~
 
 ### 3.4 State management cleanup
 - `editorSlice` likely duplicates chain data that could come from RTK Query cache — audit whether editor state can derive from query cache + local form state
 - `authSlice` reads/writes localStorage in reducers (side effect in reducer is an anti-pattern) — move to a listener middleware or thunk
 - `uiSlice` stores only `sidebarOpened` — consider using Mantine's `useDisclosure` locally instead of Redux for this
 
-### 3.5 API layer improvements
-- `chainsApi`: `executeChain` is a mutation but doesn't invalidate `Execution` tags — add `invalidatesTags: ['Execution']`
+### 3.5 API layer improvements (partial) ✅
+- ~~`chainsApi`: `executeChain` is a mutation but doesn't invalidate `Execution` tags — add `invalidatesTags: ['Execution']`~~
 - Add `onQueryStarted` optimistic updates for delete operations (remove from list before server confirms)
-- Add request deduplication — if user double-clicks Execute, two requests fire; disable button on pending mutation
-- `sessionsApi`: no `transformResponse` for PascalCase normalization — likely needs same treatment as `executionsApi`
+- ~~Add request deduplication — if user double-clicks Execute, two requests fire; disable button on pending mutation~~
+- ~~`sessionsApi`: added `transformResponse` with `normalizeSession()` for PascalCase→snake_case~~
 
 ### 3.6 File organization
 - Move `SessionSelectorModal` from `pages/ExecutionViewer/` to `components/modals/` — it's used from scenario page too
@@ -130,23 +128,26 @@
 
 ## 4. Reliability & Resilience
 
-### 4.1 SSE reconnection improvements
-- Current: 3 retries then permanent error — add exponential backoff (1s, 3s, 9s)
-- After max retries, show a "Reconnect" button instead of silent failure
+### ~~4.1 SSE reconnection improvements~~ ✅
+- ~~Current: 3→5 retries with exponential backoff (1s, 3s, 9s, 27s, 81s)~~
+- ~~After max retries, show a "Reconnect" button (uses `sseService.reconnect()`)~~
 - On reconnect success, re-fetch execution state from REST to sync missed events
-- Handle browser `offline`/`online` events — auto-pause/resume SSE
+- ~~Handle browser `offline`/`online` events — auto-pause/resume SSE~~
 
 ### 4.2 Form data persistence
 - `ScenarioEditor`: if browser crashes mid-edit, all work is lost — persist draft to `sessionStorage`
 - Restore draft on page load if unsaved data exists (with "Restore draft?" prompt)
 
-### 4.3 Backend null safety
-- Create a utility `safeArray<T>(val: T[] | null | undefined): T[]` and apply consistently
-- Better: add `transformResponse` in `chainsApi` that normalizes `tags: null` → `tags: []`, `steps: null` → `steps: []` at the API layer instead of patching every consumer
+### ~~4.3 Backend null safety~~ ✅
+- ~~Better: add `transformResponse` in `chainsApi` that normalizes `tags: null` → `tags: []`, `steps: null` → `steps: []` at the API layer instead of patching every consumer~~
+- ~~Added `normalizeChain()` function that normalizes `tags`, `mitre_tactics`, `steps`, `depends_on`, `conditions`, `output_vars`~~
+- ~~Removed scattered `?? []` patches from `ScenariosTable` and `ScenarioEditor`~~
 
-### 4.4 Concurrency guards
-- Prevent double-submit on all mutation buttons (save, delete, execute, clone)
-- RTK Query mutations expose `isLoading` — pass to button `loading` prop everywhere
+### ~~4.4 Concurrency guards~~ ✅
+- ~~Prevent double-submit on all mutation buttons (save, delete, execute, clone)~~
+- ~~RTK Query mutations expose `isLoading` — pass to button `loading` prop everywhere~~
+- ~~`ScenariosTable`: added `loading` prop to clone and delete `ActionIcon` buttons~~
+- ~~`EditorToolbar`, `SessionSelectorModal`, `ExecutionToolbar` already had loading guards~~
 - `ExecutionToolbar` cancel button: guard against cancelling already-finished executions
 
 ---
@@ -174,9 +175,9 @@
 - Add Storybook for isolated component development of: `StatusBadge`, `TerminalPanel`, `CodeBlock`, `MitreTacticBadge`
 - Useful for design review without running full app + backend
 
-### 5.4 Environment & config
-- `.env` is not in `.gitignore` — it shows as untracked in git status. Add `.env` and `.env.local` to `.gitignore`
-- Create `.env.example` with documented variables
+### ~~5.4 Environment & config~~ ✅ (partial)
+- ~~`.env` is not in `.gitignore` — it shows as untracked in git status. Add `.env` and `.env.local` to `.gitignore`~~
+- ~~Create `.env.example` with documented variables~~
 - Validate required env vars at startup in `vite.config.ts` (throw if `VITE_API_BASE_URL` is missing)
 
 ---
@@ -220,27 +221,27 @@
 
 | Priority | Task | Impact | Effort |
 |----------|------|--------|--------|
-| P0 | 4.3 Backend null safety (centralize in API layer) | Prevents crashes | Low |
-| P0 | 4.4 Double-submit guards on mutations | Prevents data corruption | Low |
-| P0 | 5.4 .env in .gitignore | Security | Trivial |
-| P1 | 1.1 Chunk splitting | 30-50% faster initial load | Low |
-| P1 | 1.2 Lazy-load xterm/codemirror | Faster page transitions | Low |
-| P1 | 1.3 Polling optimization (skipPollingIfUnfocused) | Reduces idle CPU/network | Trivial |
-| P1 | 2.1 Skeleton loaders | Perceived performance boost | Low |
-| P1 | 2.6 Execution viewer metadata + progress | Core UX gap | Medium |
-| P1 | 3.3 Error handling gaps | Reliability | Medium |
-| P1 | 4.1 SSE reconnection with backoff | Reliability for long runs | Medium |
-| P2 | 1.4-1.5 Memoization & selector optimization | Reduces re-renders | Medium |
-| P2 | 2.2 Responsive layout for mobile | Broader device support | Medium |
-| P2 | 2.4 Table sorting & pagination | Scales to many executions | Medium |
-| P2 | 2.7 Unsaved changes warning | Prevents data loss | Low |
+| ~~P0~~ | ~~4.3 Backend null safety (centralize in API layer)~~ | ~~Prevents crashes~~ | ~~Low~~ | ✅ |
+| ~~P0~~ | ~~4.4 Double-submit guards on mutations~~ | ~~Prevents data corruption~~ | ~~Low~~ | ✅ |
+| ~~P0~~ | ~~5.4 .env in .gitignore~~ | ~~Security~~ | ~~Trivial~~ | ✅ |
+| ~~P1~~ | ~~1.1 Chunk splitting~~ | ~~30-50% faster initial load~~ | ~~Low~~ | ✅ |
+| ~~P1~~ | ~~1.2 Lazy-load xterm/codemirror~~ | ~~Faster page transitions~~ | ~~Low~~ | ✅ |
+| ~~P1~~ | ~~1.3 Polling optimization (skipPollingIfUnfocused)~~ | ~~Reduces idle CPU/network~~ | ~~Trivial~~ | ✅ |
+| ~~P1~~ | ~~2.1 Skeleton loaders~~ | ~~Perceived performance boost~~ | ~~Low~~ | ✅ |
+| ~~P1~~ | ~~2.6 Execution viewer metadata + progress~~ | ~~Core UX gap~~ | ~~Medium~~ | ✅ |
+| ~~P1~~ | ~~3.3 Error handling gaps~~ | ~~Reliability~~ | ~~Medium~~ | ✅ |
+| ~~P1~~ | ~~4.1 SSE reconnection with backoff~~ | ~~Reliability for long runs~~ | ~~Medium~~ | ✅ |
+| ~~P2~~ | ~~1.4-1.5 Memoization & selector optimization~~ | ~~Reduces re-renders~~ | ~~Medium~~ | ✅ |
+| P2 | 2.2 Responsive layout for mobile | Broader device support | Medium | partial ✅ |
+| ~~P2~~ | ~~2.4 Table sorting & pagination~~ | ~~Scales to many executions~~ | ~~Medium~~ | ✅ |
+| ~~P2~~ | ~~2.7 Unsaved changes warning~~ | ~~Prevents data loss~~ | ~~Low~~ | ✅ |
 | P2 | 3.1 Type safety improvements | Developer confidence | Medium |
-| P2 | 3.5 API layer improvements | Correctness | Medium |
+| ~~P2~~ | ~~3.5 API layer improvements~~ | ~~Correctness~~ | ~~Medium~~ | ✅ |
 | P2 | 5.1 Linting & formatting setup | DX consistency | Low |
 | P2 | 5.2 Testing setup + core util tests | Long-term quality | Medium |
 | P3 | 2.3 Breadcrumbs | Navigation clarity | Low |
 | P3 | 2.5 Notification improvements | Polish | Low |
-| P3 | 2.8 Dark mode CSS variable migration | Maintainability | Low |
+| ~~P3~~ | ~~2.8 Dark mode CSS variable migration~~ | ~~Maintainability~~ | ~~Low~~ | ✅ |
 | P3 | 3.2 Dead code removal | Cleanliness | Low |
 | P3 | 3.4 State management cleanup | Architecture purity | Medium |
 | P3 | 3.6 File reorganization | Maintainability | Low |

@@ -7,6 +7,7 @@ interface ConfirmModalOptions {
   confirmLabel?: string;
   cancelLabel?: string;
   onConfirm: () => void;
+  onCancel?: () => void;
   danger?: boolean;
 }
 
@@ -16,6 +17,7 @@ export function openConfirmModal({
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
   onConfirm,
+  onCancel,
   danger = false,
 }: ConfirmModalOptions) {
   modals.openConfirmModal({
@@ -24,5 +26,7 @@ export function openConfirmModal({
     labels: { confirm: confirmLabel, cancel: cancelLabel },
     confirmProps: { color: danger ? 'red' : 'cyan' },
     onConfirm,
+    onCancel,
+    closeOnClickOutside: false,
   });
 }

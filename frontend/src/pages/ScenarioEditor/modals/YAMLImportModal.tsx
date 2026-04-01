@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import { Stack, Button, Group, Text, Alert } from '@mantine/core';
+import { lazy, Suspense, useState } from 'react';
+import { Stack, Button, Group, Text, Alert, Loader, Center } from '@mantine/core';
 import { IconAlertCircle, IconCheck } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import CodeMirror from '@uiw/react-codemirror';
 import { yaml as yamlLang } from '@codemirror/lang-yaml';
+
+const CodeMirror = lazy(() => import('@uiw/react-codemirror'));
 import type { ContextModalProps } from '@mantine/modals';
 import type { ChainCreatePayload } from '@/types';
 import { yamlToChain } from '@/utils/yamlUtils';
@@ -46,17 +47,19 @@ export function YAMLImportModal({
         {t('editor:yaml_import.paste_yaml')}
       </Text>
 
-      <CodeMirror
-        value={yamlText}
-        onChange={setYamlText}
-        extensions={[yamlLang()]}
-        theme="dark"
-        height="300px"
-        basicSetup={{
-          lineNumbers: true,
-          foldGutter: true,
-        }}
-      />
+      <Suspense fallback={<Center h={300}><Loader size="sm" /></Center>}>
+        <CodeMirror
+          value={yamlText}
+          onChange={setYamlText}
+          extensions={[yamlLang()]}
+          theme="dark"
+          height="300px"
+          basicSetup={{
+            lineNumbers: true,
+            foldGutter: true,
+          }}
+        />
+      </Suspense>
 
       {parseError && (
         <Alert color="red" icon={<IconAlertCircle size={16} />} title={t('editor:yaml_import.parse_error')}>

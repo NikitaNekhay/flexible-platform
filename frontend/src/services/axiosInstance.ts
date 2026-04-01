@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { logout } from '@/store/slices/authSlice';
 
 const axiosInstance = axios.create({
   baseURL: '/api/v1',
@@ -16,10 +17,11 @@ axiosInstance.interceptors.request.use((config) => {
 
 axiosInstance.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('auth_token');
-      window.location.href = '/';
+      // Lazy import to avoid circular dependency (store → baseApi → axiosInstance → store)
+      const { store } = await import('@/store');
+      store.dispatch(logout());
     }
     return Promise.reject(error);
   },

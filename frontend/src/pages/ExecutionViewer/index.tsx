@@ -11,6 +11,7 @@ import {
 import { useGetExecutionQuery } from '@/store/api/executionsApi';
 import { useSSE } from '@/hooks/useSSE';
 import { ExecutionToolbar } from './ExecutionToolbar';
+import { ExecutionMetaHeader } from './ExecutionMetaHeader';
 import { ExecutionStepsTable } from './ExecutionStepsTable';
 import { ExecutionStreamLog } from './ExecutionStreamLog';
 import { StepLogDrawer } from './StepLogDrawer';
@@ -76,6 +77,7 @@ export default function ExecutionViewerPage() {
     <Stack gap="md">
       <Title order={3}>{t('execution:title')}</Title>
       <ExecutionToolbar />
+      <ExecutionMetaHeader />
       <ExecutionStepsTable />
       <ExecutionStreamLog />
       <StepLogDrawer />

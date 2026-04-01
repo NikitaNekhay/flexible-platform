@@ -1,9 +1,13 @@
-import { Drawer, Group, Text } from '@mantine/core';
+import { lazy, Suspense } from 'react';
+import { Drawer, Group, Text, Loader, Center } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { selectStep } from '@/store/slices/executionSlice';
 import { StatusBadge } from '@/components/StatusBadge';
-import { TerminalPanel } from '@/components/TerminalPanel';
+
+const TerminalPanel = lazy(() =>
+  import('@/components/TerminalPanel').then((m) => ({ default: m.TerminalPanel })),
+);
 
 export function StepLogDrawer() {
   const { t } = useTranslation();
@@ -32,7 +36,9 @@ export function StepLogDrawer() {
     >
       {stepData ? (
         stepData.logs.length > 0 ? (
-          <TerminalPanel logs={stepData.logs} />
+          <Suspense fallback={<Center h="100%"><Loader size="sm" /></Center>}>
+            <TerminalPanel logs={stepData.logs} />
+          </Suspense>
         ) : (
           <Text c="dimmed" ta="center" py="xl">
             {t('execution:log_drawer.no_logs')}

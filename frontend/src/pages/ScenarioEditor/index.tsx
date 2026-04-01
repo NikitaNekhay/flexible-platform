@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { initEditor, resetEditor, setChainMeta } from '@/store/slices/editorSlice';
 import { useGetChainQuery } from '@/store/api/chainsApi';
 import { useDAGValidation } from '@/hooks/useDAGValidation';
+import { useUnsavedChangesWarning } from '@/hooks/useUnsavedChangesWarning';
 import { MITRE_TACTICS } from '@/utils/constants';
 import { EditorToolbar } from './EditorToolbar';
 import { StepsTable } from './StepsTable';
@@ -32,9 +33,9 @@ export default function ScenarioEditorPage() {
           chainId: chain.id,
           name: chain.name,
           description: chain.description,
-          tags: chain.tags ?? [],
-          mitreTactics: chain.mitre_tactics ?? [],
-          steps: chain.steps ?? [],
+          tags: chain.tags,
+          mitreTactics: chain.mitre_tactics,
+          steps: chain.steps,
         }),
       );
     } else if (!id) {
@@ -47,6 +48,9 @@ export default function ScenarioEditorPage() {
 
   // Run DAG validation on every step change
   useDAGValidation();
+
+  // Warn before leaving with unsaved changes
+  useUnsavedChangesWarning();
 
   if (id && isLoading) {
     return <LoadingOverlay visible />;

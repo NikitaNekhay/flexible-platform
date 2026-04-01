@@ -9,6 +9,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { selectStep } from '@/store/slices/executionSlice';
+import { selectStepsArray } from '@/store/selectors/executionSelectors';
 import { StatusBadge } from '@/components/StatusBadge';
 import { formatDuration } from '@/utils/formatUtils';
 import type { StepExecutionStatus } from '@/types';
@@ -18,10 +19,8 @@ const columnHelper = createColumnHelper<StepExecutionStatus>();
 export function ExecutionStepsTable() {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
-  const stepsStatus = useAppSelector((s) => s.execution.stepsStatus);
+  const data = useAppSelector(selectStepsArray);
   const selectedStepId = useAppSelector((s) => s.execution.selectedStepId);
-
-  const data = useMemo(() => Object.values(stepsStatus), [stepsStatus]);
 
   const columns = useMemo(
     () => [

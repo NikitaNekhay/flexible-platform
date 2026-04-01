@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Title, Stack, Table, Text, TextInput, Badge, Group } from '@mantine/core';
+import { Title, Stack, Table, Text, TextInput, Badge, Group, Skeleton } from '@mantine/core';
 import { IconSearch } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { useGetSessionsQuery } from '@/store/api/sessionsApi';
@@ -11,6 +11,7 @@ export default function SessionsListPage() {
 
   const { data: sessions = [], isLoading } = useGetSessionsQuery(undefined, {
     pollingInterval: 5000,
+    skipPollingIfUnfocused: true,
   });
 
   const filtered = useMemo(() => {
@@ -65,9 +66,13 @@ export default function SessionsListPage() {
           </Table.Thead>
           <Table.Tbody>
             {isLoading ? (
-              <Table.Tr>
-                <Table.Td colSpan={7} ta="center">{t('loading')}</Table.Td>
-              </Table.Tr>
+              Array.from({ length: 5 }).map((_, i) => (
+                <Table.Tr key={i}>
+                  {Array.from({ length: 7 }).map((_, j) => (
+                    <Table.Td key={j}><Skeleton height={16} radius="sm" /></Table.Td>
+                  ))}
+                </Table.Tr>
+              ))
             ) : filtered.length === 0 ? (
               <Table.Tr>
                 <Table.Td colSpan={7} ta="center">

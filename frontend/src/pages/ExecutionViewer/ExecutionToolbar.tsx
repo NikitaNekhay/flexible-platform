@@ -22,10 +22,7 @@ export function ExecutionToolbar() {
   };
 
   const handleReconnect = () => {
-    if (executionId) {
-      sseService.disconnect();
-      // Re-mount will be handled by useSSE hook
-    }
+    sseService.reconnect();
   };
 
   const streamDotColor =

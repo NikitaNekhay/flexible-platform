@@ -1,5 +1,5 @@
 import { Component, type ReactNode } from 'react';
-import { Alert, Stack, Button, Text, Code } from '@mantine/core';
+import { Alert, Stack, Button, Text, Code, Group } from '@mantine/core';
 
 interface Props {
   children: ReactNode;
@@ -32,12 +32,20 @@ export class ErrorBoundary extends Component<Props, State> {
               <Code block>{this.state.error.message}</Code>
             )}
           </Alert>
-          <Button
-            variant="light"
-            onClick={() => window.location.reload()}
-          >
-            Refresh Page
-          </Button>
+          <Group>
+            <Button
+              variant="light"
+              onClick={() => this.setState({ hasError: false, error: null })}
+            >
+              Try Again
+            </Button>
+            <Button
+              variant="subtle"
+              onClick={() => window.location.reload()}
+            >
+              Refresh Page
+            </Button>
+          </Group>
         </Stack>
       );
     }

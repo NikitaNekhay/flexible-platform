@@ -11,6 +11,26 @@ export default defineConfig(({ mode }) => {
         '@': path.resolve(__dirname, './src'),
       },
     },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+            'vendor-mantine': [
+              '@mantine/core',
+              '@mantine/hooks',
+              '@mantine/form',
+              '@mantine/notifications',
+              '@mantine/modals',
+            ],
+            'vendor-redux': [
+              '@reduxjs/toolkit',
+              'react-redux',
+            ],
+          },
+        },
+      },
+    },
     server: {
       port: 3000,
       proxy: {

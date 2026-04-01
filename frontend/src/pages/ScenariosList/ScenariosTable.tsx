@@ -8,7 +8,7 @@ import {
   createColumnHelper,
   type SortingState,
 } from '@tanstack/react-table';
-import { Table, TextInput, Group, Badge, ActionIcon, Tooltip } from '@mantine/core';
+import { Table, TextInput, Group, Badge, ActionIcon, Tooltip, Skeleton } from '@mantine/core';
 import {
   IconSearch,
   IconPencil,
@@ -41,8 +41,8 @@ export function ScenariosTable({ onExecute }: ScenariosTableProps) {
   const navigate = useNavigate();
   const { canEdit, canDelete, canExecute } = usePermissions();
   const { data: chains = [], isLoading } = useGetChainsQuery();
-  const [deleteChain] = useDeleteChainMutation();
-  const [createChain] = useCreateChainMutation();
+  const [deleteChain, { isLoading: isDeleting }] = useDeleteChainMutation();
+  const [createChain, { isLoading: isCloning }] = useCreateChainMutation();
   const [globalFilter, setGlobalFilter] = useState('');
   const [sorting, setSorting] = useState<SortingState>([]);
 
@@ -60,7 +60,7 @@ export function ScenariosTable({ onExecute }: ScenariosTableProps) {
         header: 'Tags',
         cell: (info) => (
           <Group gap={4}>
-            {(info.getValue() ?? []).map((tag) => (
+            {info.getValue().map((tag) => (
               <Badge key={tag} size="xs" variant="outline">
                 {tag}
               </Badge>
@@ -73,7 +73,7 @@ export function ScenariosTable({ onExecute }: ScenariosTableProps) {
         header: 'MITRE Tactics',
         cell: (info) => (
           <Group gap={4}>
-            {(info.getValue() ?? []).map((tactic) => (
+            {info.getValue().map((tactic) => (
               <MitreTacticBadge key={tactic} tactic={tactic} />
             ))}
           </Group>
@@ -113,13 +113,14 @@ export function ScenariosTable({ onExecute }: ScenariosTableProps) {
                 <ActionIcon
                   variant="subtle"
                   color="blue"
+                  loading={isCloning}
                   onClick={async () => {
                     const result = await createChain({
                       name: `Copy of ${chain.name}`,
                       description: chain.description,
-                      tags: chain.tags ?? [],
-                      mitre_tactics: chain.mitre_tactics ?? [],
-                      steps: chain.steps ?? [],
+                      tags: chain.tags,
+                      mitre_tactics: chain.mitre_tactics,
+                      steps: chain.steps,
                     });
                     if ('data' in result) {
                       notifications.show({
@@ -139,6 +140,7 @@ export function ScenariosTable({ onExecute }: ScenariosTableProps) {
                   <ActionIcon
                     variant="subtle"
                     color="red"
+                    loading={isDeleting}
                     onClick={() =>
                       openConfirmModal({
                         title: t('actions.delete'),
@@ -165,7 +167,7 @@ export function ScenariosTable({ onExecute }: ScenariosTableProps) {
         },
       }),
     ],
-    [canEdit, canDelete, canExecute, navigate, t, deleteChain, createChain, onExecute],
+    [canEdit, canDelete, canExecute, navigate, t, deleteChain, createChain, onExecute, isCloning, isDeleting],
   );
 
   const table = useReactTable({
@@ -207,9 +209,13 @@ export function ScenariosTable({ onExecute }: ScenariosTableProps) {
           </Table.Thead>
           <Table.Tbody>
             {isLoading ? (
-              <Table.Tr>
-                <Table.Td colSpan={5} ta="center">{t('loading')}</Table.Td>
-              </Table.Tr>
+              Array.from({ length: 5 }).map((_, i) => (
+                <Table.Tr key={i}>
+                  {Array.from({ length: 5 }).map((_, j) => (
+                    <Table.Td key={j}><Skeleton height={16} radius="sm" /></Table.Td>
+                  ))}
+                </Table.Tr>
+              ))
             ) : table.getRowModel().rows.length === 0 ? (
               <Table.Tr>
                 <Table.Td colSpan={5} ta="center">{t('no_data')}</Table.Td>

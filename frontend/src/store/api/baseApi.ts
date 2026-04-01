@@ -23,6 +23,7 @@ const axiosBaseQuery =
 export const baseApi = createApi({
   reducerPath: 'api',
   baseQuery: axiosBaseQuery(),
+  refetchOnFocus: true,
   tagTypes: ['Chain', 'Session', 'Atomic', 'Execution', 'Health'],
   endpoints: () => ({}),
 });

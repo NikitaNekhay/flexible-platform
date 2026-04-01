@@ -35,6 +35,14 @@ body {
 }
 
 /* Scrollbar styling for dark mode */
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--mantine-color-dark-4) var(--mantine-color-dark-7);
+}
+
+/* Webkit (Chrome, Edge, Safari) */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;

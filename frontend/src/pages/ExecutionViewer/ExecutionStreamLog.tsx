@@ -1,7 +1,11 @@
-import { useMemo } from 'react';
-import { Box, Text } from '@mantine/core';
+import { lazy, Suspense, useMemo } from 'react';
+import { Box, Text, Loader, Center } from '@mantine/core';
 import { useAppSelector } from '@/store/hooks';
-import { TerminalPanel } from '@/components/TerminalPanel';
+import { selectStepCount } from '@/store/selectors/executionSelectors';
+
+const TerminalPanel = lazy(() =>
+  import('@/components/TerminalPanel').then((m) => ({ default: m.TerminalPanel })),
+);
 
 export function ExecutionStreamLog() {
   const stepsStatus = useAppSelector((s) => s.execution.stepsStatus);
@@ -51,7 +55,9 @@ export function ExecutionStreamLog() {
     return lines;
   }, [stepsStatus, status]);
 
-  if (Object.keys(stepsStatus).length === 0) {
+  const stepCount = useAppSelector(selectStepCount);
+
+  if (stepCount === 0) {
     return (
       <Text c="dimmed" ta="center" py="xl">
         Waiting for execution output...
@@ -62,13 +68,16 @@ export function ExecutionStreamLog() {
   return (
     <Box
       style={{
-        height: 400,
+        minHeight: 200,
+        height: 'clamp(200px, 40vh, 500px)',
         border: '1px solid var(--mantine-color-dark-4)',
         borderRadius: 8,
         overflow: 'hidden',
       }}
     >
-      <TerminalPanel logs={allLogs} />
+      <Suspense fallback={<Center h="100%"><Loader size="sm" /></Center>}>
+        <TerminalPanel logs={allLogs} />
+      </Suspense>
     </Box>
   );
 }

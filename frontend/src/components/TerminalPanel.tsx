@@ -17,15 +17,19 @@ export function TerminalPanel({ logs }: TerminalPanelProps) {
   useEffect(() => {
     if (!containerRef.current) return;
 
+    const styles = getComputedStyle(document.documentElement);
+    const bg = styles.getPropertyValue('--mantine-color-dark-7').trim() || '#1A1B1E';
+    const fg = styles.getPropertyValue('--mantine-color-dark-0').trim() || '#C1C2C5';
+
     const terminal = new Terminal({
       cursorBlink: false,
       disableStdin: true,
       fontSize: 13,
       fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
       theme: {
-        background: '#1A1B1E',
-        foreground: '#C1C2C5',
-        cursor: '#C1C2C5',
+        background: bg,
+        foreground: fg,
+        cursor: fg,
       },
       scrollback: 10000,
       convertEol: true,

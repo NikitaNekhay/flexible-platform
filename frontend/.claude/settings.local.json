@@ -8,7 +8,8 @@
       "Bash(find 'Y:/IT work/flexible-platform/git-project/daemon' -name *.go -type f)",
       "Bash(grep -E \"\\\\.\\(md|txt|yaml|yml\\)$\")",
       "Bash(grep -E \"\\(README|\\\\.md$|CLAUDE\\\\.md|docs\\)\")",
-      "Bash(find \"Y:/IT work/flexible-platform/git-project/frontend/src\" -type f \\\\\\( -name \"*.tsx\" -o -name \"*.ts\" \\\\\\) -exec wc -l {} +)"
+      "Bash(find \"Y:/IT work/flexible-platform/git-project/frontend/src\" -type f \\\\\\( -name \"*.tsx\" -o -name \"*.ts\" \\\\\\) -exec wc -l {} +)",
+      "Bash(node -e \"console.log\\(require\\(''./node_modules/react-router-dom/package.json''\\).version\\)\")"
     ]
   }
 }

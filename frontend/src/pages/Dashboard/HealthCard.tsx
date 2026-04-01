@@ -10,6 +10,7 @@ export function HealthCard() {
 
   const { data, isLoading, isError } = useGetHealthQuery(undefined, {
     pollingInterval: 30000,
+    skipPollingIfUnfocused: true,
   });
 
   const isHealthy = data?.status === 'ok';
