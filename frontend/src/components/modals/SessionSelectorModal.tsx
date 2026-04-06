@@ -7,7 +7,7 @@ import type { ContextModalProps } from '@mantine/modals';
 import { useGetSessionsQuery } from '@/store/api/sessionsApi';
 import { useExecuteChainMutation } from '@/store/api/chainsApi';
 import { LoadingOverlay } from '@/components/LoadingOverlay';
-import { formatTimestamp } from '@/utils/formatUtils';
+
 
 interface SessionSelectorInnerProps {
   chainId: string;
@@ -32,6 +32,7 @@ export function SessionSelectorModal({
     return sessions.filter(
       (s) =>
         s.hostname.toLowerCase().includes(q) ||
+        s.name.toLowerCase().includes(q) ||
         s.username.toLowerCase().includes(q) ||
         s.os.toLowerCase().includes(q) ||
         s.id.toLowerCase().includes(q),
@@ -76,31 +77,33 @@ export function SessionSelectorModal({
             {t('execution:select_session.no_sessions')}
           </Text>
         ) : (
-          <Table striped highlightOnHover>
+          <Table striped highlightOnHover aria-label="Available sessions">
             <Table.Thead>
               <Table.Tr>
+                <Table.Th>Name</Table.Th>
                 <Table.Th>{t('execution:select_session.columns.hostname')}</Table.Th>
                 <Table.Th>{t('execution:select_session.columns.os')}</Table.Th>
                 <Table.Th>{t('execution:select_session.columns.username')}</Table.Th>
-                <Table.Th>{t('execution:select_session.columns.arch')}</Table.Th>
-                <Table.Th>{t('execution:select_session.columns.last_seen')}</Table.Th>
+                <Table.Th>PID</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
               {filtered.map((session) => (
                 <Table.Tr
                   key={session.id}
+                  tabIndex={0}
                   onClick={() => setSelectedId(session.id)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedId(session.id); } }}
                   style={{
                     cursor: 'pointer',
                     background: selectedId === session.id ? 'var(--mantine-color-dark-5)' : undefined,
                   }}
                 >
+                  <Table.Td><Text size="sm" fw={500} c="cyan">{session.name}</Text></Table.Td>
                   <Table.Td>{session.hostname}</Table.Td>
                   <Table.Td>{session.os}</Table.Td>
                   <Table.Td>{session.username}</Table.Td>
-                  <Table.Td>{session.arch}</Table.Td>
-                  <Table.Td>{formatTimestamp(session.last_seen)}</Table.Td>
+                  <Table.Td><Text size="sm" ff="monospace">{session.pid}</Text></Table.Td>
                 </Table.Tr>
               ))}
             </Table.Tbody>

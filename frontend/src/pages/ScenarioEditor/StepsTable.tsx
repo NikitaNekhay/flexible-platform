@@ -91,7 +91,7 @@ function SortableRow({ step, index, onEdit, onDuplicate, onDelete, canEdit }: So
       <Table.Td>
         <Badge
           size="xs"
-          color={step.on_fail === 'stop' ? 'red' : step.on_fail === 'continue' ? 'green' : 'yellow'}
+          color={step.on_fail === 'stop' ? 'red' : step.on_fail === 'continue' ? 'green' : 'lime'}
           variant="light"
         >
           {step.on_fail}
@@ -165,7 +165,7 @@ export function StepsTable() {
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <Table.ScrollContainer minWidth={800}>
-        <Table striped highlightOnHover>
+        <Table striped highlightOnHover aria-label="Scenario steps">
           <Table.Thead>
             <Table.Tr>
               <Table.Th w={40}></Table.Th>

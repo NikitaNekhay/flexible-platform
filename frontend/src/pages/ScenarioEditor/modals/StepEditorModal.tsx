@@ -7,14 +7,15 @@ import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { addStep, updateStep } from '@/store/slices/editorSlice';
 import { ActionTypeSelect } from '@/components/forms/ActionTypeSelect';
 import { DependsOnSelect } from '@/components/forms/DependsOnSelect';
-import { CommandForm } from '@/components/forms/action-forms/CommandForm';
-import { AtomicForm } from '@/components/forms/action-forms/AtomicForm';
-import { BinaryForm } from '@/components/forms/action-forms/BinaryForm';
-import { UploadForm } from '@/components/forms/action-forms/UploadForm';
-import { SliverRpcForm } from '@/components/forms/action-forms/SliverRpcForm';
-import { PythonForm } from '@/components/forms/action-forms/PythonForm';
-import { ProbeForm } from '@/components/forms/action-forms/ProbeForm';
+import { CommandForm } from '../forms/CommandForm';
+import { AtomicForm } from '../forms/AtomicForm';
+import { BinaryForm } from '../forms/BinaryForm';
+import { UploadForm } from '../forms/UploadForm';
+import { SliverRpcForm } from '../forms/SliverRpcForm';
+import { PythonForm } from '../forms/PythonForm';
+import { ProbeForm } from '../forms/ProbeForm';
 import { ON_FAIL_OPTIONS } from '@/utils/constants';
+import { isValidStepId } from '@/utils/validation';
 
 interface StepEditorInnerProps {
   step?: Step;
@@ -96,6 +97,10 @@ export function StepEditorModal({
 
   const handleSubmit = (values: Step) => {
     if (innerProps.isNew) {
+      if (!isValidStepId(values.id)) {
+        form.setFieldError('id', 'Step ID must contain only letters, numbers, underscores, dots, or hyphens');
+        return;
+      }
       if (existingIds.includes(values.id)) {
         form.setFieldError('id', t('editor:validation.duplicate_id', { id: values.id }));
         return;

@@ -3,7 +3,6 @@ import { Title, Stack, Table, Text, TextInput, Badge, Group, Skeleton } from '@m
 import { IconSearch } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { useGetSessionsQuery } from '@/store/api/sessionsApi';
-import { formatTimestamp } from '@/utils/formatUtils';
 
 export default function SessionsListPage() {
   const { t } = useTranslation();
@@ -20,6 +19,7 @@ export default function SessionsListPage() {
     return sessions.filter(
       (s) =>
         s.id.toLowerCase().includes(q) ||
+        s.name.toLowerCase().includes(q) ||
         s.hostname.toLowerCase().includes(q) ||
         s.username.toLowerCase().includes(q) ||
         s.os.toLowerCase().includes(q),
@@ -52,30 +52,29 @@ export default function SessionsListPage() {
       />
 
       <Table.ScrollContainer minWidth={600}>
-        <Table striped highlightOnHover>
+        <Table striped highlightOnHover aria-label="Active sessions">
           <Table.Thead>
             <Table.Tr>
               <Table.Th>Session ID</Table.Th>
+              <Table.Th>Name</Table.Th>
               <Table.Th>Hostname</Table.Th>
               <Table.Th>OS</Table.Th>
               <Table.Th>Username</Table.Th>
-              <Table.Th>Arch</Table.Th>
               <Table.Th>PID</Table.Th>
-              <Table.Th>Last Seen</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
             {isLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <Table.Tr key={i}>
-                  {Array.from({ length: 7 }).map((_, j) => (
+                  {Array.from({ length: 6 }).map((_, j) => (
                     <Table.Td key={j}><Skeleton height={16} radius="sm" /></Table.Td>
                   ))}
                 </Table.Tr>
               ))
             ) : filtered.length === 0 ? (
               <Table.Tr>
-                <Table.Td colSpan={7} ta="center">
+                <Table.Td colSpan={6} ta="center">
                   <Text c="dimmed" py="xl">{t('no_data')}</Text>
                 </Table.Td>
               </Table.Tr>
@@ -83,18 +82,19 @@ export default function SessionsListPage() {
               filtered.map((session) => (
                 <Table.Tr key={session.id}>
                   <Table.Td>
-                    <Text size="sm" ff="monospace">{session.id}</Text>
+                    <Text size="sm" ff="monospace">{session.id.slice(0, 8)}</Text>
                   </Table.Td>
                   <Table.Td>
-                    <Text size="sm" fw={500}>{session.hostname}</Text>
+                    <Text size="sm" fw={500} c="cyan">{session.name}</Text>
                   </Table.Td>
-                  <Table.Td>{session.os}</Table.Td>
+                  <Table.Td>{session.hostname}</Table.Td>
+                  <Table.Td>
+                    <Badge variant="light" size="sm">{session.os}</Badge>
+                  </Table.Td>
                   <Table.Td>{session.username}</Table.Td>
-                  <Table.Td>{session.arch}</Table.Td>
                   <Table.Td>
                     <Text size="sm" ff="monospace">{session.pid}</Text>
                   </Table.Td>
-                  <Table.Td>{formatTimestamp(session.last_seen)}</Table.Td>
                 </Table.Tr>
               ))
             )}

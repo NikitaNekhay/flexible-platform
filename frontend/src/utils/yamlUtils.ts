@@ -32,7 +32,7 @@ export function chainToYAML(chain: Chain | ChainCreatePayload): string {
  * Throws on invalid YAML syntax.
  */
 export function yamlToChain(yamlString: string): ChainCreatePayload {
-  const parsed = yaml.load(yamlString) as Record<string, unknown>;
+  const parsed = yaml.load(yamlString, { schema: yaml.JSON_SCHEMA }) as Record<string, unknown>;
 
   if (!parsed || typeof parsed !== 'object') {
     throw new Error('YAML must be an object');

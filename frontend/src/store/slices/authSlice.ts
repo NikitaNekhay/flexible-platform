@@ -19,14 +19,10 @@ const authSlice = createSlice({
     setCredentials(state, action: PayloadAction<{ token: string; role: UserRole }>) {
       state.token = action.payload.token;
       state.role = action.payload.role;
-      localStorage.setItem('auth_token', action.payload.token);
-      localStorage.setItem('auth_role', action.payload.role);
     },
     logout(state) {
       state.token = null;
       state.role = 'viewer';
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('auth_role');
     },
   },
 });

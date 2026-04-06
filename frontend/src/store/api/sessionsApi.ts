@@ -1,27 +1,17 @@
 import { baseApi } from './baseApi';
 import type { Session } from '@/types';
 
-interface SessionRaw {
-  ID: string;
-  Hostname: string;
-  OS: string;
-  Username: string;
-  Arch: string;
-  PID: number;
-  ConnectedAt: string;
-  LastSeen: string;
-}
-
-function normalizeSession(raw: SessionRaw): Session {
+function normalizeSession(raw: Record<string, unknown>): Session {
   return {
-    id: raw.ID,
-    hostname: raw.Hostname,
-    os: raw.OS,
-    username: raw.Username,
-    arch: raw.Arch,
-    pid: raw.PID,
-    connected_at: raw.ConnectedAt,
-    last_seen: raw.LastSeen,
+    id: String(raw.id ?? ''),
+    name: String(raw.name ?? ''),
+    hostname: String(raw.hostname ?? ''),
+    os: String(raw.os ?? ''),
+    username: String(raw.username ?? ''),
+    arch: String(raw.arch ?? ''),
+    pid: Number(raw.pid ?? 0),
+    connected_at: String(raw.connected_at ?? ''),
+    last_seen: String(raw.last_seen ?? ''),
   };
 }
 
@@ -29,7 +19,7 @@ export const sessionsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getSessions: builder.query<Session[], void>({
       query: () => ({ url: '/sessions', method: 'GET' }),
-      transformResponse: (response: SessionRaw[]) =>
+      transformResponse: (response: Record<string, unknown>[]) =>
         (response ?? []).map(normalizeSession),
       providesTags: ['Session'],
     }),

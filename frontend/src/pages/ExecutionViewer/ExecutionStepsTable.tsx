@@ -60,7 +60,7 @@ export function ExecutionStepsTable() {
 
   return (
     <Table.ScrollContainer minWidth={500}>
-      <Table striped highlightOnHover>
+      <Table striped highlightOnHover aria-label="Execution steps">
         <Table.Thead>
           {table.getHeaderGroups().map((headerGroup) => (
             <Table.Tr key={headerGroup.id}>

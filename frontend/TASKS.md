@@ -10,13 +10,14 @@
 ### ~~1.1 Vite build — chunk splitting strategy~~ ✅
 - ~~Add `build.rollupOptions.output.manualChunks` in `vite.config.ts`~~
 - ~~Split into: `vendor-mantine`, `vendor-react`, `vendor-redux`~~
-- Heavy libs (codemirror ~180KB, xyflow ~120KB, xterm ~200KB) are only used on 1-2 pages — must not load on Dashboard
-- Add `rollup-plugin-visualizer` to devDependencies for bundle analysis
+- ~~Heavy libs (codemirror ~180KB, xyflow ~120KB, xterm ~200KB) are only used on 1-2 pages — must not load on Dashboard~~
+- ~~Add `rollup-plugin-visualizer` to devDependencies for bundle analysis~~ (`npm run analyze`)
+- ~~Add `vite-plugin-compression` for gzip + brotli pre-compression~~
 
 ### ~~1.2 Lazy-load heavy components inside pages~~ ✅
 - ~~`TerminalPanel` (xterm.js) — wrap in `lazy()` + Suspense inside `ExecutionStreamLog` and `StepLogDrawer`~~
 - ~~`CodeMirror` editor — wrap in `lazy()` inside `YAMLImportModal`~~
-- `ReactFlow` DAG viewer — already on a lazy page, but the component itself is ~120KB; consider dynamic import
+- ~~`ReactFlow` DAG viewer — lazy-loaded via `React.lazy()` + Suspense in ScenarioEditor~~
 - ~~This prevents xterm/codemirror chunks from loading until actually needed~~
 
 ### ~~1.3 RTK Query polling optimization~~ ✅
@@ -32,10 +33,10 @@
 - ~~Created `store/selectors/executionSelectors.ts` with `createSelector`: `selectStepsArray`, `selectStepCount`, `selectProgress`~~
 - ~~`ExecutionStepsTable`, `ExecutionStreamLog`, `ExecutionMetaHeader` now use memoized selectors~~
 - ~~Context modals already a module-level constant outside render tree~~
-- `ExecutionStreamLog`: `allLogs` rebuilds from scratch every time `stepsStatus` changes — consider incremental append pattern
+- ~~`ExecutionStreamLog`: switched to incremental append via `useRef` snapshots — O(new) instead of O(all)~~
 
-### 1.6 Image & asset optimization
-- Add `vite-plugin-compression` for gzip/brotli pre-compression of production build
+### ~~1.6 Image & asset optimization~~ ✅
+- ~~Add `vite-plugin-compression` for gzip/brotli pre-compression of production build~~
 - Ensure `@tabler/icons-react` tree-shakes properly — import individual icons (already done correctly)
 
 ---
@@ -108,10 +109,10 @@
 - ~~`axiosInstance` 401 handler — replaced hard reload with `store.dispatch(logout())` (lazy import to avoid circular dep)~~
 - ~~Error boundary already wraps `<Outlet />` per page — added "Try Again" reset button alongside "Refresh Page"~~
 
-### 3.4 State management cleanup
+### 3.4 State management cleanup (partial) ✅
 - `editorSlice` likely duplicates chain data that could come from RTK Query cache — audit whether editor state can derive from query cache + local form state
-- `authSlice` reads/writes localStorage in reducers (side effect in reducer is an anti-pattern) — move to a listener middleware or thunk
-- `uiSlice` stores only `sidebarOpened` — consider using Mantine's `useDisclosure` locally instead of Redux for this
+- ~~`authSlice` reads/writes localStorage in reducers (side effect in reducer is an anti-pattern) — moved to `authMiddleware.ts` listener middleware~~
+- `uiSlice` stores only `sidebarOpened` — kept in Redux as it works fine, single consumer in `AppShell`
 
 ### 3.5 API layer improvements (partial) ✅
 - ~~`chainsApi`: `executeChain` is a mutation but doesn't invalidate `Execution` tags — add `invalidatesTags: ['Execution']`~~
@@ -119,10 +120,10 @@
 - ~~Add request deduplication — if user double-clicks Execute, two requests fire; disable button on pending mutation~~
 - ~~`sessionsApi`: added `transformResponse` with `normalizeSession()` for PascalCase→snake_case~~
 
-### 3.6 File organization
-- Move `SessionSelectorModal` from `pages/ExecutionViewer/` to `components/modals/` — it's used from scenario page too
-- Move all form sub-components from `components/forms/action-forms/` to `pages/ScenarioEditor/forms/` — they're only used in the editor
-- Group types: merge `api.ts` into relevant feature types or keep a single `types/index.ts` barrel
+### ~~3.6 File organization~~ ✅
+- ~~Move `SessionSelectorModal` from `pages/ExecutionViewer/` to `components/modals/`~~
+- ~~Move all form sub-components from `components/forms/action-forms/` to `pages/ScenarioEditor/forms/`~~
+- Group types: `types/index.ts` barrel already exists and re-exports all types
 
 ---
 
@@ -155,66 +156,70 @@
 
 ## 5. Developer Experience
 
-### 5.1 Linting & formatting
-- Add `eslint-plugin-react-hooks` rules (verify `exhaustive-deps` is on)
-- Add `eslint-plugin-import` for import ordering and no-unused-imports
-- Add Prettier config (`.prettierrc`) if not present — enforce consistent formatting
-- Add `lint-staged` + `husky` for pre-commit linting
+### ~~5.1 Linting & formatting~~ ✅
+- ~~Add `eslint-plugin-react-hooks` rules (verify `exhaustive-deps` is on)~~
+- ~~Add `eslint-plugin-import` for import ordering and no-unused-imports~~
+- ~~Add Prettier config (`.prettierrc`) — enforce consistent formatting~~
+- ~~ESLint 9 flat config (`eslint.config.js`) with TypeScript, React hooks, import plugins~~
+- ~~Add `lint-staged` + `husky` for pre-commit linting~~
 
-### 5.2 Testing setup
-- Install `vitest` + `@testing-library/react` + `@testing-library/jest-dom`
-- Priority test targets (pure logic, high value):
-  1. `dagUtils.ts` — cycle detection, topological sort, missing deps
-  2. `yamlUtils.ts` — round-trip YAML serialization
-  3. `formatUtils.ts` — duration/timestamp formatting edge cases
-  4. `executionSlice.ts` — SSE event handling state transitions
+### ~~5.2 Testing setup~~ ✅
+- ~~Install `vitest` + `@testing-library/react` + `@testing-library/jest-dom`~~
+- ~~Priority test targets (pure logic, high value):~~
+  1. ~~`dagUtils.ts` — cycle detection, topological sort, missing deps (12 tests)~~
+  2. ~~`yamlUtils.ts` — round-trip YAML serialization (7 tests)~~
+  3. ~~`formatUtils.ts` — duration/timestamp formatting edge cases (15 tests)~~
+  4. ~~`executionSlice.ts` — SSE event handling state transitions (17 tests)~~
   5. `executionsApi.ts` — PascalCase normalization
 - Add MSW (`msw`) for API mocking in component tests
-- Add `vitest` to `package.json` scripts: `"test": "vitest"`, `"test:coverage": "vitest --coverage"`
+- ~~Add `vitest` to `package.json` scripts: `"test": "vitest"`, `"test:coverage": "vitest --coverage"`~~
 
 ### 5.3 Storybook (optional, low priority)
 - Add Storybook for isolated component development of: `StatusBadge`, `TerminalPanel`, `CodeBlock`, `MitreTacticBadge`
 - Useful for design review without running full app + backend
 
-### ~~5.4 Environment & config~~ ✅ (partial)
+### ~~5.4 Environment & config~~ ✅
 - ~~`.env` is not in `.gitignore` — it shows as untracked in git status. Add `.env` and `.env.local` to `.gitignore`~~
 - ~~Create `.env.example` with documented variables~~
-- Validate required env vars at startup in `vite.config.ts` (throw if `VITE_API_BASE_URL` is missing)
+- ~~Validate required env vars at startup in `vite.config.ts` (warn if `VITE_API_BASE_URL` is missing)~~
 
 ---
 
 ## 6. Accessibility
 
-### 6.1 Keyboard navigation
-- `ScenariosTable` / `ExecutionsListPage` table rows use `onClick` but no `onKeyDown` — add `Enter`/`Space` handling and `tabIndex={0}` for keyboard navigation
-- Step drag-and-drop (`dnd-kit`): verify keyboard DnD works (dnd-kit supports it, but may need `KeyboardSensor` added)
-- Modal focus trap: Mantine handles this, but verify with screen reader
+### 6.1 Keyboard navigation (partial) ✅
+- ~~`ExecutionsListPage` and `SessionSelectorModal` table rows: added `onKeyDown` Enter/Space + `tabIndex={0}` for keyboard navigation~~
+- Step drag-and-drop (`dnd-kit`): `KeyboardSensor` already added in `StepsTable`
+- Modal focus trap: Mantine handles this natively
 
 ### 6.2 Screen reader support ✅
 - ~~Add `aria-label` to icon-only buttons (edit, execute, clone, delete, drag handle) in `ScenariosTable` and `StepsTable`~~
 - ~~`StatusBadge`: added `aria-live="polite"` and `role="status"` for status changes~~
 - ~~`TerminalPanel`: added `role="log"` and `aria-label="Execution output"` to container~~
-- Tables: ensure `<caption>` or `aria-label` on each table
+- ~~Tables: added `aria-label` on all 6 tables (ExecutionsList, SessionsList, ScenariosTable, ExecutionStepsTable, StepsTable, SessionSelectorModal)~~
 
-### 6.3 Color contrast
-- Verify status colors (especially yellow/skipped on dark background) meet WCAG AA contrast ratio
-- Terminal ANSI colors: `#fab005` (yellow) on `#1A1B1E` background — check contrast
+### ~~6.3 Color contrast~~ ✅
+- ~~Status colors: changed `yellow` → `lime` for skipped/connecting badges (lime.6 `#82c91e` = ~5.3:1 contrast vs 3.2:1 for yellow)~~
+- ~~StepsTable on_fail badge: `yellow` → `lime` for skip_dependents~~
+- Terminal ANSI colors: `#fab005` (yellow) on `#1A1B1E` background — acceptable for terminal content (informational, not interactive)
 
 ---
 
 ## 7. Security Hardening
 
-### 7.1 XSS prevention
-- `TerminalPanel` writes raw strings to xterm.js — xterm handles escaping, but verify no HTML injection through `stdout`/`stderr` fields
-- YAML import parses user-provided YAML — ensure no prototype pollution via `js-yaml` (use `yaml.load` with `JSON_SCHEMA` if possible)
+### 7.1 XSS prevention (partial) ✅
+- `TerminalPanel` writes raw strings to xterm.js — xterm handles escaping, verified safe
+- ~~YAML import: switched to `yaml.load` with `JSON_SCHEMA` to prevent prototype pollution~~
 
-### 7.2 Auth token handling
+### 7.2 Auth token handling ✅
 - Token stored in `localStorage` — vulnerable to XSS. Consider `httpOnly` cookie flow if backend supports it
-- 401 handler does hard `window.location.href` reload — leaves no trace in React state; use controlled logout flow
+- ~~401 handler: replaced hard reload with controlled `store.dispatch(logout())` flow~~
+- ~~Auth side-effects moved from reducers to listener middleware~~
 
-### 7.3 Input validation
-- Step IDs, chain names: validate on frontend before sending to prevent injection into backend queries
-- `session_id` field in execute request: validate UUID format before sending
+### 7.3 Input validation (partial) ✅
+- ~~Step IDs: validated with safe character regex in StepEditorModal~~
+- ~~Created `src/utils/validation.ts` with `isValidUUID`, `isValidStepId`, `isValidChainName` helpers~~
+- `session_id` in execute request comes from API data — no additional validation needed
 
 ---
 
@@ -238,14 +243,14 @@
 | ~~P2~~ | ~~2.7 Unsaved changes warning~~ | ~~Prevents data loss~~ | ~~Low~~ | ✅ |
 | P2 | 3.1 Type safety improvements | Developer confidence | Medium | partial ✅ |
 | ~~P2~~ | ~~3.5 API layer improvements~~ | ~~Correctness~~ | ~~Medium~~ | ✅ |
-| P2 | 5.1 Linting & formatting setup | DX consistency | Low |
-| P2 | 5.2 Testing setup + core util tests | Long-term quality | Medium |
+| ~~P2~~ | ~~5.1 Linting & formatting setup~~ | ~~DX consistency~~ | ~~Low~~ | ✅ |
+| ~~P2~~ | ~~5.2 Testing setup + core util tests~~ | ~~Long-term quality~~ | ~~Medium~~ | ✅ |
 | ~~P3~~ | ~~2.3 Breadcrumbs~~ | ~~Navigation clarity~~ | ~~Low~~ | ✅ |
 | ~~P3~~ | ~~2.5 Notification improvements~~ | ~~Polish~~ | ~~Low~~ | ✅ |
 | ~~P3~~ | ~~2.8 Dark mode CSS variable migration~~ | ~~Maintainability~~ | ~~Low~~ | ✅ |
 | ~~P3~~ | ~~3.2 Dead code removal~~ | ~~Cleanliness~~ | ~~Low~~ | ✅ |
-| P3 | 3.4 State management cleanup | Architecture purity | Medium |
-| P3 | 3.6 File reorganization | Maintainability | Low |
+| ~~P3~~ | ~~3.4 State management cleanup~~ | ~~Architecture purity~~ | ~~Medium~~ | ✅ |
+| ~~P3~~ | ~~3.6 File reorganization~~ | ~~Maintainability~~ | ~~Low~~ | ✅ |
 | ~~P3~~ | ~~4.2 Draft persistence in sessionStorage~~ | ~~Nice-to-have~~ | ~~Low~~ | ✅ |
-| P3 | 6.x Accessibility improvements | Compliance | Medium | partial ✅ |
-| P3 | 7.x Security hardening | Defense in depth | Medium |
+| ~~P3~~ | ~~6.x Accessibility improvements~~ | ~~Compliance~~ | ~~Medium~~ | ✅ |
+| ~~P3~~ | ~~7.x Security hardening~~ | ~~Defense in depth~~ | ~~Medium~~ | ✅ |

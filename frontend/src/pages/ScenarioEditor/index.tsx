@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Stack, TextInput, Textarea, TagsInput, Title, Breadcrumbs, Anchor } from '@mantine/core';
+import { Stack, TextInput, Textarea, TagsInput, Title, Breadcrumbs, Anchor, Skeleton } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { initEditor, resetEditor, setChainMeta } from '@/store/slices/editorSlice';
@@ -11,8 +11,9 @@ import { useEditorDraft } from '@/hooks/useEditorDraft';
 import { MITRE_TACTICS } from '@/utils/constants';
 import { EditorToolbar } from './EditorToolbar';
 import { StepsTable } from './StepsTable';
-import { DAGViewer } from './DAGViewer';
 import { LoadingOverlay } from '@/components/LoadingOverlay';
+
+const DAGViewer = lazy(() => import('./DAGViewer'));
 
 export default function ScenarioEditorPage() {
   const { id } = useParams<{ id: string }>();
@@ -108,7 +109,9 @@ export default function ScenarioEditorPage() {
 
       <StepsTable />
 
-      <DAGViewer />
+      <Suspense fallback={<Skeleton height={400} radius="md" />}>
+        <DAGViewer />
+      </Suspense>
     </Stack>
   );
 }

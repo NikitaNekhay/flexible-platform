@@ -13,7 +13,7 @@ import './theme/globalStyles.css';
 import { StepEditorModal } from '@/pages/ScenarioEditor/modals/StepEditorModal';
 import { AtomicSelectorModal } from '@/pages/ScenarioEditor/modals/AtomicSelectorModal';
 import { YAMLImportModal } from '@/pages/ScenarioEditor/modals/YAMLImportModal';
-import { SessionSelectorModal } from '@/pages/ExecutionViewer/SessionSelectorModal';
+import { SessionSelectorModal } from '@/components/modals/SessionSelectorModal';
 
 // Mantine ModalsProvider requires Record<string, MantineModal> — cast is unavoidable
 // due to contravariance of innerProps. See src/types/modals.ts for typed inner props.

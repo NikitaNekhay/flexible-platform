@@ -11,7 +11,15 @@
       "Bash(find \"Y:/IT work/flexible-platform/git-project/frontend/src\" -type f \\\\\\( -name \"*.tsx\" -o -name \"*.ts\" \\\\\\) -exec wc -l {} +)",
       "Bash(node -e \"console.log\\(require\\(''./node_modules/react-router-dom/package.json''\\).version\\)\")",
       "Bash(cd:*)",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "Bash(curl -s http://localhost:18080/api/v1/sessions)",
+      "Bash(curl -s http://localhost:18080/api/v1/atomics)",
+      "Bash(curl -s http://localhost:18080/api/v1/atomics/)",
+      "Bash(curl -s http://localhost:18080/api/v1/)",
+      "Bash(curl -s http://localhost:18080/api/v1/health)",
+      "Bash(docker exec:*)",
+      "Bash(npx vitest:*)",
+      "Bash(chmod +x:*)"
     ]
   }
 }

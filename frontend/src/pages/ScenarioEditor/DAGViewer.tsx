@@ -76,7 +76,7 @@ function buildLayout(steps: Step[], cycleNodeIds: Set<string>) {
   return { nodes, edges };
 }
 
-export function DAGViewer() {
+export default function DAGViewer() {
   const { t } = useTranslation();
   const [opened, { toggle }] = useDisclosure(true);
   const steps = useAppSelector((s) => s.editor.steps);

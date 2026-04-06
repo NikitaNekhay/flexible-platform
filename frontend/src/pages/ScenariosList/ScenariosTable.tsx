@@ -195,7 +195,7 @@ export function ScenariosTable({ onExecute }: ScenariosTableProps) {
         mb="md"
       />
       <Table.ScrollContainer minWidth={700}>
-        <Table striped highlightOnHover>
+        <Table striped highlightOnHover aria-label="Scenarios list">
           <Table.Thead>
             {table.getHeaderGroups().map((headerGroup) => (
               <Table.Tr key={headerGroup.id}>

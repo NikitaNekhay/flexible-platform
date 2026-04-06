@@ -86,7 +86,7 @@ export default function ExecutionsListPage() {
       </Group>
 
       <Table.ScrollContainer minWidth={700}>
-        <Table striped highlightOnHover>
+        <Table striped highlightOnHover aria-label="Executions list">
           <Table.Thead>
             <Table.Tr>
               <Table.Th>Execution ID</Table.Th>
@@ -116,7 +116,9 @@ export default function ExecutionsListPage() {
               paginatedData.map((exec) => (
                 <Table.Tr
                   key={exec.id}
+                  tabIndex={0}
                   onClick={() => navigate(`/execution/${exec.id}`)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/execution/${exec.id}`); } }}
                   style={{ cursor: 'pointer' }}
                 >
                   <Table.Td>

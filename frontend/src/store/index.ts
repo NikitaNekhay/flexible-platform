@@ -2,6 +2,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query';
 import { baseApi } from './api/baseApi';
 import { rtkErrorMiddleware } from './errorMiddleware';
+import { authListenerMiddleware } from './authMiddleware';
 import authReducer from './slices/authSlice';
 import editorReducer from './slices/editorSlice';
 import executionReducer from './slices/executionSlice';
@@ -16,7 +17,9 @@ export const store = configureStore({
     [baseApi.reducerPath]: baseApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(baseApi.middleware, rtkErrorMiddleware),
+    getDefaultMiddleware()
+      .prepend(authListenerMiddleware.middleware)
+      .concat(baseApi.middleware, rtkErrorMiddleware),
 });
 
 setupListeners(store.dispatch);
