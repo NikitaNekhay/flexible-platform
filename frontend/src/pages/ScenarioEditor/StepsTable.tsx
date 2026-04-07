@@ -149,6 +149,7 @@ export function StepsTable() {
       modal: 'stepEditor',
       title: t('editor:step_modal.title_edit'),
       size: 'xl',
+      closeOnClickOutside: false,
       innerProps: { step, isNew: false },
     });
   };

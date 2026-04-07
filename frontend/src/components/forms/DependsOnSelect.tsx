@@ -28,6 +28,7 @@ export function DependsOnSelect({ value, onChange, currentStepId }: DependsOnSel
       placeholder={data.length === 0 ? 'No other steps' : 'Select dependencies...'}
       searchable
       clearable
+      comboboxProps={{ withinPortal: false }}
     />
   );
 }

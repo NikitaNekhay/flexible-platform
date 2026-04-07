@@ -4,6 +4,7 @@ import {
   IconListDetails,
   IconDeviceDesktop,
   IconPlayerPlay,
+  IconFlask,
 } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -11,6 +12,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 const NAV_ITEMS = [
   { labelKey: 'nav.dashboard', icon: IconDashboard, path: '/' },
   { labelKey: 'nav.scenarios', icon: IconListDetails, path: '/scenarios' },
+  { labelKey: 'nav.atomics', icon: IconFlask, path: '/atomics' },
   { labelKey: 'nav.sessions', icon: IconDeviceDesktop, path: '/sessions' },
   { labelKey: 'nav.executions', icon: IconPlayerPlay, path: '/executions' },
 ] as const;

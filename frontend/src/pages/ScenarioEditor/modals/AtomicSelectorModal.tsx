@@ -4,7 +4,6 @@ import { IconSearch } from '@tabler/icons-react';
 import type { ContextModalProps } from '@mantine/modals';
 import type { Atomic } from '@/types';
 import { useGetAtomicsQuery } from '@/store/api/atomicsApi';
-import { MitreTacticBadge } from '@/components/MitreTacticBadge';
 
 interface AtomicSelectorInnerProps {
   onSelect: (atomic: Atomic, testIndex: number) => void;
@@ -29,15 +28,16 @@ export function AtomicSelectorModal({
     );
   }, [atomics, search]);
 
-  // Group by tactic
+  // Group by base technique ID (e.g. T1003.001 → T1003)
   const grouped = useMemo(() => {
     const map = new Map<string, Atomic[]>();
     for (const a of filtered) {
-      const list = map.get(a.tactic) ?? [];
+      const base = a.technique_id.split('.')[0];
+      const list = map.get(base) ?? [];
       list.push(a);
-      map.set(a.tactic, list);
+      map.set(base, list);
     }
-    return map;
+    return [...map.entries()].sort(([a], [b]) => a.localeCompare(b));
   }, [filtered]);
 
   const handleSelect = (atomic: Atomic, testIndex: number) => {
@@ -60,12 +60,12 @@ export function AtomicSelectorModal({
         <Text c="dimmed">No matching atomics found</Text>
       ) : (
         <Accordion variant="separated" styles={{ content: { padding: 0 } }}>
-          {[...grouped.entries()].map(([tactic, items]) => (
-            <Accordion.Item key={tactic} value={tactic}>
+          {grouped.map(([base, items]) => (
+            <Accordion.Item key={base} value={base}>
               <Accordion.Control>
                 <Group gap="sm">
-                  <MitreTacticBadge tactic={tactic} />
-                  <Text size="sm">({items.length})</Text>
+                  <Text size="sm" fw={600} ff="monospace">{base}</Text>
+                  <Text size="sm" c="dimmed">({items.length})</Text>
                 </Group>
               </Accordion.Control>
               <Accordion.Panel>

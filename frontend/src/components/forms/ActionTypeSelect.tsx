@@ -23,6 +23,7 @@ export function ActionTypeSelect({ value, onChange }: ActionTypeSelectProps) {
       value={value}
       onChange={(v) => v && onChange(v as ActionType)}
       allowDeselect={false}
+      comboboxProps={{ withinPortal: false }}
     />
   );
 }

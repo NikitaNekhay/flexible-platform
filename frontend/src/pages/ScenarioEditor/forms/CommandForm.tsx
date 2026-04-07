@@ -18,6 +18,7 @@ export function CommandForm({ value, onChange }: CommandFormProps) {
         }
         allowDeselect={false}
         placeholder="Select interpreter"
+        comboboxProps={{ withinPortal: false }}
       />
       <Textarea
         label="Command"

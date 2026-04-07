@@ -75,6 +75,7 @@ export function BinaryForm({ value, onChange }: BinaryFormProps) {
           onChange({ ...value, binary: { ...value.binary, platform: v ?? 'linux' } })
         }
         allowDeselect={false}
+        comboboxProps={{ withinPortal: false }}
       />
 
       <Switch

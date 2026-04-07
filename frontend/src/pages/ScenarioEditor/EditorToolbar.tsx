@@ -6,6 +6,7 @@ import {
   IconFileImport,
   IconPlus,
   IconArrowLeft,
+  IconFlask,
 } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -16,6 +17,8 @@ import {
   replaceAllSteps,
   setChainMeta,
   markClean,
+  initEditor,
+  addStep,
 } from '@/store/slices/editorSlice';
 import {
   useCreateChainMutation,
@@ -25,7 +28,8 @@ import {
 import { useYAML } from '@/hooks/useYAML';
 import { usePermissions } from '@/hooks/usePermissions';
 import { openConfirmModal } from '@/components/ConfirmModal';
-import type { ChainCreatePayload } from '@/types';
+import type { ChainCreatePayload, Atomic } from '@/types';
+import { v4Fallback } from './idUtils';
 
 export function EditorToolbar() {
   const { t } = useTranslation();
@@ -50,17 +54,28 @@ export function EditorToolbar() {
   const isSaving = isCreating || isUpdating;
 
   const handleSave = async () => {
+    if (!chainName.trim()) {
+      notifications.show({ title: 'Scenario name required', message: 'Please enter a name before saving', color: 'yellow' });
+      return;
+    }
     if (!validation.valid) {
       notifications.show({ title: t('editor:validation.invalid'), message: '', color: 'red' });
       return;
     }
 
+    // Strip frontend-only metadata from atomic_ref before sending to backend
+    const sanitizedSteps = steps.map((step) => {
+      if (step.action.type !== 'atomic') return step;
+      const { name: _n, guid: _g, ...cleanRef } = step.action.atomic_ref as typeof step.action.atomic_ref & { name?: string; guid?: string };
+      return { ...step, action: { type: 'atomic' as const, atomic_ref: cleanRef } };
+    });
+
     const payload: ChainCreatePayload = {
-      name: chainName,
+      name: chainName.trim(),
       description: chainDescription,
       tags: chainTags,
       mitre_tactics: chainMitreTactics,
-      steps,
+      steps: sanitizedSteps,
     };
 
     if (chainId) {
@@ -72,7 +87,17 @@ export function EditorToolbar() {
     } else {
       const result = await createChain(payload);
       if ('data' in result) {
-        dispatch(markClean());
+        // Write the new chainId into the store immediately so that:
+        // (a) useBlocker reads isDirty=false from store.getState() before React re-renders;
+        // (b) if navigation is somehow cancelled, any re-save uses updateChain, not createChain.
+        dispatch(initEditor({
+          chainId: result.data!.id,
+          name: chainName.trim(),
+          description: chainDescription,
+          tags: chainTags,
+          mitreTactics: chainMitreTactics,
+          steps: sanitizedSteps,
+        }));
         notifications.show({ title: t('editor:scenario_created'), message: '', color: 'green' });
         navigate(`/editor/${result.data!.id}`, { replace: true });
       }
@@ -97,7 +122,42 @@ export function EditorToolbar() {
       modal: 'stepEditor',
       title: t('editor:step_modal.title_new'),
       size: 'xl',
+      closeOnClickOutside: false,
       innerProps: { isNew: true },
+    });
+  };
+
+  const handleAddAtomic = () => {
+    modals.openContextModal({
+      modal: 'atomicSelector',
+      title: 'Add Atomic from Library',
+      size: 'xl',
+      closeOnClickOutside: false,
+      innerProps: {
+        onSelect: (atomic: Atomic, testIndex: number) => {
+          const test = atomic.tests[testIndex];
+          const defaultArgs: Record<string, string> = {};
+          for (const arg of test?.arguments ?? []) {
+            defaultArgs[arg.name] = arg.default ?? '';
+          }
+          dispatch(
+            addStep({
+              id: `${atomic.technique_id}_${testIndex}_${v4Fallback()}`,
+              name: `${atomic.technique_id} — ${test?.name ?? ''}`,
+              depends_on: [],
+              on_fail: 'stop',
+              action: {
+                type: 'atomic',
+                atomic_ref: {
+                  id: atomic.technique_id,
+                  test: testIndex,
+                  args: defaultArgs,
+                },
+              },
+            }),
+          );
+        },
+      },
     });
   };
 
@@ -148,6 +208,9 @@ export function EditorToolbar() {
             <>
               <Button variant="light" leftSection={<IconPlus size={16} />} onClick={handleAddStep}>
                 {t('editor:toolbar.add_step')}
+              </Button>
+              <Button variant="light" color="violet" leftSection={<IconFlask size={16} />} onClick={handleAddAtomic}>
+                Add Atomic
               </Button>
               <Button variant="light" leftSection={<IconFileImport size={16} />} onClick={handleImportYAML}>
                 {t('editor:toolbar.import_yaml')}

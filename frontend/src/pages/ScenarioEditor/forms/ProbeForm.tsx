@@ -18,6 +18,7 @@ export function ProbeForm({ value, onChange }: ProbeFormProps) {
         }
         allowDeselect={false}
         placeholder="Select probe kind"
+        comboboxProps={{ withinPortal: false }}
       />
       <Select
         label="Platform"
@@ -27,6 +28,7 @@ export function ProbeForm({ value, onChange }: ProbeFormProps) {
           onChange({ ...value, probe: { ...value.probe, platform: v ?? 'linux' } })
         }
         allowDeselect={false}
+        comboboxProps={{ withinPortal: false }}
       />
       {(value.probe.kind === 'software_exists' || value.probe.kind === 'software_version') && (
         <TextInput

@@ -3,6 +3,7 @@
   "nav": {
     "dashboard": "Главная",
     "scenarios": "Сценарии",
+    "atomics": "Атомики",
     "sessions": "Сессии",
     "executions": "Выполнения",
     "editor": "Редактор",

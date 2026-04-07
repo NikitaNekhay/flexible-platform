@@ -30,47 +30,47 @@ function normalizeListItem(raw: ListItemRaw): Atomic {
 }
 
 /* ── Detail endpoint normalization ───────────────────────────────────────────
- * Backend returns the Go Technique struct serialized with YAML→JSON field names:
- *   { attack_technique, display_name, tactic, platforms, atomic_tests: [{name, auto_generated_guid,
- *     description, supported_platforms, input_arguments: {argName: {description, type, default}},
- *     executor: {name, command}, ...}] }
+ * Backend returns PascalCase Go struct fields:
+ *   { ID, DisplayName, Tactic, Platforms, Tests: [{Name, GUID, Description,
+ *     SupportedPlatforms, InputArguments: {argName: {Description, Type, Default}},
+ *     Executor: {Name, Command, ElevationRequired}, ...}] }
  */
 interface DetailRaw {
-  attack_technique: string;
-  display_name: string;
-  tactic: string;
-  platforms: string[];
-  atomic_tests: Array<{
-    name: string;
-    auto_generated_guid?: string;
-    description?: string;
-    supported_platforms?: string[];
-    input_arguments?: Record<string, { description: string; type: string; default: string }>;
-    executor?: { name: string; command?: string };
-  }>;
+  ID: string;
+  DisplayName: string;
+  Tactic: string;
+  Platforms: string[] | null;
+  Tests: Array<{
+    Name: string;
+    GUID?: string;
+    Description?: string;
+    SupportedPlatforms?: string[];
+    InputArguments?: Record<string, { Description: string; Type: string; Default: string }> | null;
+    Executor?: { Name: string; Command?: string; ElevationRequired?: boolean };
+  }> | null;
 }
 
 function normalizeDetail(raw: DetailRaw): Atomic {
   return {
-    technique_id: raw.attack_technique,
-    technique_name: raw.display_name,
-    tactic: raw.tactic ?? '',
-    tests: (raw.atomic_tests ?? []).map((t, i) => {
-      const args: AtomicArgument[] = Object.entries(t.input_arguments ?? {}).map(
+    technique_id: raw.ID,
+    technique_name: raw.DisplayName,
+    tactic: raw.Tactic ?? '',
+    tests: (raw.Tests ?? []).map((t, i) => {
+      const args: AtomicArgument[] = Object.entries(t.InputArguments ?? {}).map(
         ([name, a]) => ({
           name,
-          description: a.description ?? '',
-          type: (a.type ?? 'string') as AtomicArgument['type'],
-          default: a.default,
-          required: !a.default,
+          description: a.Description ?? '',
+          type: (a.Type?.toLowerCase() ?? 'string') as AtomicArgument['type'],
+          default: a.Default,
+          required: !a.Default,
         }),
       );
       return {
         test_index: i,
-        name: t.name,
-        description: t.description ?? '',
-        platforms: t.supported_platforms ?? [],
-        executor: t.executor?.name ?? '',
+        name: t.Name,
+        description: t.Description ?? '',
+        platforms: t.SupportedPlatforms ?? [],
+        executor: t.Executor?.Name ?? '',
         arguments: args,
       } satisfies AtomicTest;
     }),
