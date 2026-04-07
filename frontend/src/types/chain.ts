@@ -109,10 +109,13 @@ export interface OutputCapture {
   group?: number;
 }
 
+// Matches backend Dep struct: plain string OR operator group {any:[...]}/{all:[...]}
+export type DepEntry = string | { any?: string[]; all?: string[] };
+
 export interface Step {
   id: string;
   name: string;
-  depends_on: string[];
+  depends_on: DepEntry[];
   action: StepAction;
   conditions?: StepCondition[];
   // Single variable name — backend field is output_var (string), not output_vars (array)

@@ -16,6 +16,7 @@ import { IconChevronDown, IconChevronUp } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { modals } from '@mantine/modals';
 import { useAppSelector } from '@/store/hooks';
+import { flattenDeps } from '@/utils/dagUtils';
 import type { Step } from '@/types';
 
 import '@xyflow/react/dist/style.css';
@@ -34,7 +35,7 @@ function buildLayout(steps: Step[], cycleNodeIds: Set<string>) {
 
   const edges: Edge[] = [];
   for (const step of steps) {
-    for (const dep of step.depends_on) {
+    for (const dep of flattenDeps(step.depends_on)) {
       if (steps.some((s) => s.id === dep)) {
         g.setEdge(dep, step.id);
         edges.push({

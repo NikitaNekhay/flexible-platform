@@ -87,10 +87,25 @@ const editorSlice = createSlice({
       }
     },
     removeStep(state, action: PayloadAction<string>) {
-      state.steps = state.steps.filter((s) => s.id !== action.payload);
-      // Also remove from depends_on of other steps
+      const removedId = action.payload;
+      state.steps = state.steps.filter((s) => s.id !== removedId);
+      // Also remove from depends_on of other steps (handles both string and {any/all} entries)
       for (const step of state.steps) {
-        step.depends_on = step.depends_on.filter((d) => d !== action.payload);
+        step.depends_on = step.depends_on
+          .map((d) => {
+            if (typeof d === 'string') return d === removedId ? null : d;
+            const entry: { any?: string[]; all?: string[] } = {};
+            if (d.any) {
+              const filtered = d.any.filter((id) => id !== removedId);
+              if (filtered.length > 0) entry.any = filtered;
+            }
+            if (d.all) {
+              const filtered = d.all.filter((id) => id !== removedId);
+              if (filtered.length > 0) entry.all = filtered;
+            }
+            return (entry.any || entry.all) ? entry : null;
+          })
+          .filter((d): d is NonNullable<typeof d> => d !== null);
       }
       state.isDirty = true;
     },

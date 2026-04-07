@@ -6,7 +6,10 @@ import type { Step, OnFailBehavior, StepAction } from '@/types';
 const stepSchema = z.object({
   id: z.string().min(1, 'Step ID is required'),
   name: z.string().min(1, 'Step name is required'),
-  depends_on: z.array(z.string()),
+  depends_on: z.array(z.union([
+    z.string(),
+    z.object({ any: z.array(z.string()).optional(), all: z.array(z.string()).optional() }),
+  ])),
   on_fail: z.enum(['abort', 'continue', 'continue_no_err', 'skip_dependents'] as const),
   action: z.object({
     type: z.string(),

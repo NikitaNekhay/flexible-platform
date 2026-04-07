@@ -1,10 +1,24 @@
-import type { Step } from '@/types';
+import type { Step, DepEntry } from '@/types';
 
 export interface DAGValidationResult {
   valid: boolean;
   cycleNodes: string[];
   missingDeps: Array<{ stepId: string; missingDep: string }>;
   duplicateIds: string[];
+}
+
+/** Flatten DepEntry[] to plain string IDs (expands {any:[...]}/{all:[...]} groups). */
+export function flattenDeps(deps: DepEntry[]): string[] {
+  const ids: string[] = [];
+  for (const d of deps) {
+    if (typeof d === 'string') {
+      ids.push(d);
+    } else {
+      if (d.any) ids.push(...d.any);
+      if (d.all) ids.push(...d.all);
+    }
+  }
+  return ids;
 }
 
 /**
@@ -22,7 +36,7 @@ export function detectCycle(steps: Step[]): string[] {
   }
 
   for (const step of steps) {
-    for (const dep of step.depends_on) {
+    for (const dep of flattenDeps(step.depends_on)) {
       if (ids.has(dep)) {
         adj.get(dep)!.push(step.id);
         inDegree.set(step.id, (inDegree.get(step.id) ?? 0) + 1);
@@ -60,7 +74,7 @@ export function findMissingDeps(
   const ids = new Set(steps.map((s) => s.id));
   const missing: Array<{ stepId: string; missingDep: string }> = [];
   for (const step of steps) {
-    for (const dep of step.depends_on) {
+    for (const dep of flattenDeps(step.depends_on)) {
       if (!ids.has(dep)) {
         missing.push({ stepId: step.id, missingDep: dep });
       }
@@ -118,7 +132,7 @@ export function topologicalSort(steps: Step[]): string[] | null {
   }
 
   for (const step of steps) {
-    for (const dep of step.depends_on) {
+    for (const dep of flattenDeps(step.depends_on)) {
       if (ids.has(dep)) {
         adj.get(dep)!.push(step.id);
         inDegree.set(step.id, (inDegree.get(step.id) ?? 0) + 1);

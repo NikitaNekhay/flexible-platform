@@ -12,6 +12,7 @@ export type {
   StepCondition,
   OutputFilter,
   OutputCapture,
+  DepEntry,
   Step,
   Chain,
   ChainCreatePayload,

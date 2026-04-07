@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { detectCycle, findMissingDeps, findDuplicateIds, validateDAG, topologicalSort } from './dagUtils';
+import { detectCycle, findMissingDeps, findDuplicateIds, validateDAG, topologicalSort, flattenDeps } from './dagUtils';
 import type { Step } from '@/types';
 
 function makeStep(id: string, deps: string[] = []): Step {
@@ -8,10 +8,23 @@ function makeStep(id: string, deps: string[] = []): Step {
     name: id,
     depends_on: deps,
     action: { type: 'command', command: { interpreter: 'sh', cmd: 'echo' } },
-    conditions: [],
     on_fail: 'abort',
   };
 }
+
+describe('flattenDeps', () => {
+  it('flattens plain strings', () => {
+    expect(flattenDeps(['a', 'b'])).toEqual(['a', 'b']);
+  });
+
+  it('flattens {any: [...]} groups', () => {
+    expect(flattenDeps(['a', { any: ['b', 'c'] }])).toEqual(['a', 'b', 'c']);
+  });
+
+  it('flattens {all: [...]} groups', () => {
+    expect(flattenDeps([{ all: ['x', 'y'] }])).toEqual(['x', 'y']);
+  });
+});
 
 describe('detectCycle', () => {
   it('returns empty for no steps', () => {
@@ -42,12 +55,9 @@ describe('detectCycle', () => {
       makeStep('c', ['b']),
       makeStep('d', ['c', 'b']),
       makeStep('e', ['d']),
-      // cycle: e → b already exists as b → ... → e, add e dep to b
     ];
-    // No cycle yet — all linear
     expect(detectCycle(steps)).toEqual([]);
 
-    // Now add a back-edge
     const withCycle = [
       makeStep('a'),
       makeStep('b', ['a', 'e']),

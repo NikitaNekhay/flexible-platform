@@ -80,11 +80,13 @@ function SortableRow({ step, index, onEdit, onDuplicate, onDelete, canEdit }: So
       </Table.Td>
       <Table.Td>
         {step.depends_on.length > 0
-          ? step.depends_on.map((d) => (
-              <Badge key={d} size="xs" variant="outline" mr={4}>
-                {d}
-              </Badge>
-            ))
+          ? step.depends_on.map((d, i) => {
+              if (typeof d === 'string') {
+                return <Badge key={d} size="xs" variant="outline" mr={4}>{d}</Badge>;
+              }
+              const label = d.any ? `any(${d.any.join(',')})` : d.all ? `all(${d.all.join(',')})` : '?';
+              return <Badge key={`op-${i}`} size="xs" variant="outline" color="violet" mr={4}>{label}</Badge>;
+            })
           : <Text size="xs" c="dimmed">—</Text>
         }
       </Table.Td>
