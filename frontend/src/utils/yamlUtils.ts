@@ -2,7 +2,7 @@ import yaml from 'js-yaml';
 import type { Chain, ChainCreatePayload, Step, StepAction, StepCondition } from '@/types';
 
 const VALID_ACTION_TYPES = ['command', 'atomic', 'binary', 'upload', 'sliver_rpc', 'python', 'probe'] as const;
-const VALID_ON_FAIL = ['stop', 'continue', 'skip_dependents'] as const;
+const VALID_ON_FAIL = ['abort', 'continue', 'continue_no_err', 'skip_dependents'] as const;
 
 /**
  * Serialize a single step to YAML string.
@@ -57,24 +57,48 @@ export function yamlToStep(yamlString: string): Step {
     }
     default:
       // All other action types are user-controlled — pass through as-is
-      action = actionRaw as StepAction;
+      action = actionRaw as unknown as StepAction;
   }
 
-  const onFail = String(raw.on_fail ?? 'stop') as Step['on_fail'];
+  const onFailRaw = String(raw.on_fail ?? 'abort');
+  const onFail = (VALID_ON_FAIL as readonly string[]).includes(onFailRaw) ? onFailRaw as Step['on_fail'] : 'abort';
+
+  // Parse conditions — backend uses var/op/value/negate
+  const conditions: StepCondition[] = [];
+  if (Array.isArray(raw.conditions)) {
+    for (const c of raw.conditions as Record<string, unknown>[]) {
+      if (c && typeof c === 'object') {
+        conditions.push({
+          var: String(c.var ?? ''),
+          op: (c.op as StepCondition['op']) ?? 'eq',
+          value: String(c.value ?? ''),
+          ...(c.negate != null ? { negate: Boolean(c.negate) } : {}),
+        });
+      }
+    }
+  }
 
   return {
     id,
     name: String(raw.name ?? ''),
     depends_on: Array.isArray(raw.depends_on) ? (raw.depends_on as unknown[]).map(String) : [],
-    on_fail: (VALID_ON_FAIL as readonly string[]).includes(onFail) ? onFail : 'stop',
+    on_fail: onFail,
     action,
-    conditions: Array.isArray(raw.conditions) ? (raw.conditions as StepCondition[]) : [],
-    output_vars: Array.isArray(raw.output_vars) ? (raw.output_vars as unknown[]).map(String) : [],
+    conditions,
+    output_var: raw.output_var != null ? String(raw.output_var) : undefined,
+    timeout: raw.timeout != null ? String(raw.timeout) : undefined,
+    output_filter: raw.output_filter != null
+      ? { regex: String((raw.output_filter as any).regex ?? ''), group: (raw.output_filter as any).group }
+      : undefined,
+    output_extract: Array.isArray(raw.output_extract)
+      ? (raw.output_extract as any[]).map((e) => ({ var: String(e.var ?? ''), regex: String(e.regex ?? ''), group: e.group }))
+      : undefined,
   };
 }
 
 /**
  * Serialize a Chain (or chain creation payload) to YAML string.
+ * Field names match the backend chain.Step struct (output_var, on_fail, var/op/negate for conditions).
  */
 export function chainToYAML(chain: Chain | ChainCreatePayload): string {
   const payload = {
@@ -82,19 +106,21 @@ export function chainToYAML(chain: Chain | ChainCreatePayload): string {
     description: chain.description,
     tags: chain.tags,
     mitre_tactics: chain.mitre_tactics,
-    steps: (chain.steps ?? []).map((step) => ({
-      id: step.id,
-      name: step.name,
-      depends_on: step.depends_on,
-      action: step.action,
-      ...(step.conditions && step.conditions.length > 0
-        ? { conditions: step.conditions }
-        : {}),
-      ...(step.output_vars && step.output_vars.length > 0
-        ? { output_vars: step.output_vars }
-        : {}),
-      on_fail: step.on_fail,
-    })),
+    steps: (chain.steps ?? []).map((step) => {
+      const s: Record<string, unknown> = {
+        id: step.id,
+        name: step.name,
+        depends_on: step.depends_on,
+        action: step.action,
+        on_fail: step.on_fail,
+      };
+      if (step.conditions && step.conditions.length > 0) s.conditions = step.conditions;
+      if (step.output_var) s.output_var = step.output_var;
+      if (step.output_filter) s.output_filter = step.output_filter;
+      if (step.output_extract && step.output_extract.length > 0) s.output_extract = step.output_extract;
+      if (step.timeout) s.timeout = step.timeout;
+      return s;
+    }),
   };
   return yaml.dump(payload, { indent: 2, lineWidth: 120, noRefs: true });
 }
@@ -111,16 +137,26 @@ export function yamlToChain(yamlString: string): ChainCreatePayload {
   }
 
   const steps = Array.isArray(parsed.steps)
-    ? (parsed.steps as Step[]).map((s) => ({
+    ? (parsed.steps as Record<string, unknown>[]).map((s) => ({
         id: String(s.id || ''),
         name: String(s.name || ''),
-        depends_on: Array.isArray(s.depends_on)
-          ? s.depends_on.map(String)
+        depends_on: Array.isArray(s.depends_on) ? (s.depends_on as unknown[]).map(String) : [],
+        action: (s.action as Step['action']) ?? { type: 'command' as const, command: { interpreter: 'sh', cmd: '' } },
+        conditions: Array.isArray(s.conditions)
+          ? (s.conditions as Record<string, unknown>[]).map((c) => ({
+              var: String(c.var ?? ''),
+              op: (c.op as StepCondition['op']) ?? 'eq',
+              value: String(c.value ?? ''),
+              ...(c.negate != null ? { negate: Boolean(c.negate) } : {}),
+            }))
           : [],
-        action: s.action ?? { type: 'command' as const, command: { interpreter: 'sh', cmd: '' } },
-        conditions: Array.isArray(s.conditions) ? s.conditions : [],
-        output_vars: Array.isArray(s.output_vars) ? s.output_vars : [],
-        on_fail: (s.on_fail as Step['on_fail']) || 'stop',
+        output_var: s.output_var != null ? String(s.output_var) : undefined,
+        output_filter: s.output_filter as Step['output_filter'],
+        output_extract: Array.isArray(s.output_extract) ? (s.output_extract as Step['output_extract']) : undefined,
+        timeout: s.timeout != null ? String(s.timeout) : undefined,
+        on_fail: ((VALID_ON_FAIL as readonly string[]).includes(String(s.on_fail ?? ''))
+          ? s.on_fail
+          : 'abort') as Step['on_fail'],
       }))
     : [];
 

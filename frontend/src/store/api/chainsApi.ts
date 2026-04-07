@@ -16,7 +16,7 @@ function normalizeChain(raw: Chain): Chain {
       ...s,
       depends_on: s.depends_on ?? [],
       conditions: s.conditions ?? [],
-      output_vars: s.output_vars ?? [],
+      output_var: s.output_var ?? '',
     })),
   };
 }

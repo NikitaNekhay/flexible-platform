@@ -115,11 +115,14 @@ const executionSlice = createSlice({
           break;
         }
         case 'step_log': {
-          // Replay event — contains the full stored step result
+          // Replay event — contains the full stored step result.
+          // REPLACE logs (not append): this event is called by both the REST seed and the SSE
+          // replay-on-connect; appending would duplicate every log line on each reconnect.
           const step = ensureStep(state, event.step_id);
           step.status = (event.status as StepExecutionStatus['status']) ?? step.status;
           step.exit_code = event.exit_code;
           step.duration_ms = event.duration_ms;
+          step.logs = [];
           if (event.stdout) step.logs.push(event.stdout);
           if (event.stderr) step.logs.push(`[stderr] ${event.stderr}`);
           if (event.error) step.logs.push(`[error] ${event.error}`);

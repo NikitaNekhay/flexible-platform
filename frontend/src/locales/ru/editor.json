@@ -42,8 +42,9 @@
     "probe": "Проверка"
   },
   "on_fail_options": {
-    "stop": "Остановить цепочку",
+    "abort": "Прервать цепочку",
     "continue": "Продолжить",
+    "continue_no_err": "Продолжить (игнорировать ошибку)",
     "skip_dependents": "Пропустить зависимые"
   },
   "atomic_selector": {

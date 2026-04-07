@@ -14,16 +14,15 @@ const sampleChain: ChainCreatePayload = {
       depends_on: [],
       action: { type: 'command', command: { interpreter: 'bash', cmd: 'echo hello' } },
       conditions: [],
-      output_vars: [],
-      on_fail: 'stop',
+      on_fail: 'abort',
     },
     {
       id: 'step-2',
       name: 'Second step',
       depends_on: ['step-1'],
       action: { type: 'command', command: { interpreter: 'sh', cmd: 'ls' } },
-      conditions: [{ variable: 'exit_code', operator: 'eq', value: '0' }],
-      output_vars: ['files'],
+      conditions: [{ var: 'exit_code', op: 'eq', value: '0' }],
+      output_var: 'files',
       on_fail: 'continue',
     },
   ],
@@ -39,20 +38,20 @@ describe('chainToYAML', () => {
     expect(yaml).toContain('echo hello');
   });
 
-  it('omits empty conditions and output_vars', () => {
+  it('omits empty conditions and output_var', () => {
     const yaml = chainToYAML(sampleChain);
-    // step-1 has no conditions/output_vars, they should not appear
+    // step-1 has no conditions/output_var, they should not appear
     const step1Section = yaml.split('step-2')[0];
     expect(step1Section).not.toContain('conditions');
-    expect(step1Section).not.toContain('output_vars');
+    expect(step1Section).not.toContain('output_var');
   });
 
-  it('includes non-empty conditions and output_vars', () => {
+  it('includes non-empty conditions and output_var', () => {
     const yaml = chainToYAML(sampleChain);
-    // step-2 has conditions and output_vars
+    // step-2 has conditions and output_var
     const step2Section = yaml.split('step-2')[1];
     expect(step2Section).toContain('conditions');
-    expect(step2Section).toContain('output_vars');
+    expect(step2Section).toContain('output_var');
   });
 });
 
@@ -88,7 +87,7 @@ steps:
     expect(parsed.tags).toEqual([]);
     expect(parsed.mitre_tactics).toEqual([]);
     expect(parsed.steps[0].depends_on).toEqual([]);
-    expect(parsed.steps[0].on_fail).toBe('stop');
+    expect(parsed.steps[0].on_fail).toBe('abort');
   });
 
   it('defaults name when missing', () => {

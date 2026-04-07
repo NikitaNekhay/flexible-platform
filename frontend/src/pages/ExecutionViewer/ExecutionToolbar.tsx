@@ -44,20 +44,24 @@ export function ExecutionToolbar() {
       </Group>
 
       <Group gap="sm">
-        <Group gap={6}>
-          <Box
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: '50%',
-              background: `var(--mantine-color-${streamDotColor}-6)`,
-              animation: streamStatus === 'connecting' ? 'pulse 1.5s ease infinite' : undefined,
-            }}
-          />
-          <Badge variant="light" size="sm" color={streamDotColor}>
-            {t('execution:toolbar.stream_status')}: {streamStatus}
-          </Badge>
-        </Group>
+        {/* Stream status badge — only shown while execution is live.
+            Once done/failed the stream has cleanly closed; no badge needed. */}
+        {status !== 'done' && status !== 'failed' && (
+          <Group gap={6}>
+            <Box
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                background: `var(--mantine-color-${streamDotColor}-6)`,
+                animation: streamStatus === 'connecting' ? 'pulse 1.5s ease infinite' : undefined,
+              }}
+            />
+            <Badge variant="light" size="sm" color={streamDotColor}>
+              {t('execution:toolbar.stream_status')}: {streamStatus}
+            </Badge>
+          </Group>
+        )}
 
         {streamStatus === 'error' && (
           <Button variant="light" size="compact-sm" color="yellow" onClick={handleReconnect}>

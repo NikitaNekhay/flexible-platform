@@ -42,8 +42,9 @@
     "probe": "Probe"
   },
   "on_fail_options": {
-    "stop": "Stop Chain",
+    "abort": "Abort Chain",
     "continue": "Continue",
+    "continue_no_err": "Continue (ignore error)",
     "skip_dependents": "Skip Dependents"
   },
   "atomic_selector": {

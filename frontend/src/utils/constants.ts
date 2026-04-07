@@ -11,8 +11,9 @@ export const ACTION_TYPES: { value: ActionType; label: string }[] = [
 ];
 
 export const ON_FAIL_OPTIONS: { value: OnFailBehavior; label: string }[] = [
-  { value: 'stop', label: 'editor:on_fail_options.stop' },
+  { value: 'abort', label: 'editor:on_fail_options.abort' },
   { value: 'continue', label: 'editor:on_fail_options.continue' },
+  { value: 'continue_no_err', label: 'editor:on_fail_options.continue_no_err' },
   { value: 'skip_dependents', label: 'editor:on_fail_options.skip_dependents' },
 ];
 

@@ -8,6 +8,7 @@ import { IconCode, IconForms } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { initEditor, resetEditor, setChainMeta, replaceAllSteps } from '@/store/slices/editorSlice';
+import type { Step, ChainCreatePayload } from '@/types';
 import { useGetChainQuery } from '@/store/api/chainsApi';
 import { useDAGValidation } from '@/hooks/useDAGValidation';
 import { useUnsavedChangesWarning } from '@/hooks/useUnsavedChangesWarning';
@@ -17,7 +18,6 @@ import { EditorToolbar } from './EditorToolbar';
 import { StepsTable } from './StepsTable';
 import { ScenarioYAMLPanel } from './ScenarioYAMLPanel';
 import { LoadingOverlay } from '@/components/LoadingOverlay';
-import type { Step } from '@/types';
 
 const DAGViewer = lazy(() => import('./DAGViewer'));
 
@@ -35,11 +35,12 @@ export default function ScenarioEditorPage() {
   const chainTags = useAppSelector((s) => s.editor.chainTags);
   const chainMitreTactics = useAppSelector((s) => s.editor.chainMitreTactics);
 
-  // Capture navigation state once on mount (passed from e.g. Atomics library "Add to scenario")
-  const initialStepsRef = useRef<Step[] | null>(
-    (location.state as { initialSteps?: Step[] } | null)?.initialSteps ?? null,
-  );
-  // Tracks whether we've already seeded from initialStepsRef — survives StrictMode cleanup
+  const locationState = (location.state as { initialSteps?: Step[]; initialChain?: ChainCreatePayload } | null);
+
+  // Capture navigation state once on mount (passed from e.g. Atomics library or /scenarios import)
+  const initialStepsRef = useRef<Step[] | null>(locationState?.initialSteps ?? null);
+  const initialChainRef = useRef<ChainCreatePayload | null>(locationState?.initialChain ?? null);
+  // Tracks whether we've already seeded — survives StrictMode cleanup
   const initialStepsApplied = useRef(false);
 
   // Cleanup on unmount only — kept separate so StrictMode's between-run cleanup doesn't
@@ -66,10 +67,23 @@ export default function ScenarioEditorPage() {
       );
     } else if (!id) {
       dispatch(resetEditor());
-      // Seed with steps passed from navigation state (e.g. from Atomics library).
-      // Guard with applied ref so StrictMode's double-run doesn't skip seeding on
-      // the second pass (ref is alive; applied flag is reset in the cleanup above).
-      if (initialStepsRef.current && !initialStepsApplied.current) {
+      if (initialStepsApplied.current) {
+        // already seeded — nothing to do
+      } else if (initialChainRef.current) {
+        // Full chain payload from /scenarios YAML import → seed all meta + steps
+        const chain = initialChainRef.current;
+        dispatch(setChainMeta({
+          name: chain.name,
+          description: chain.description,
+          tags: chain.tags,
+          mitreTactics: chain.mitre_tactics,
+        }));
+        if (chain.steps.length > 0) {
+          dispatch(replaceAllSteps(chain.steps));
+        }
+        initialStepsApplied.current = true;
+      } else if (initialStepsRef.current) {
+        // Steps only from Atomics library "Add to scenario"
         dispatch(replaceAllSteps(initialStepsRef.current));
         initialStepsApplied.current = true;
       }

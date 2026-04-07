@@ -10,13 +10,15 @@ export type {
   StepAction,
   OnFailBehavior,
   StepCondition,
+  OutputFilter,
+  OutputCapture,
   Step,
   Chain,
   ChainCreatePayload,
   ChainUpdatePayload,
 } from './chain';
 
-export type { Session } from './session';
+export type { Session, ImplantParams, ImplantPlatform } from './session';
 
 export type {
   AtomicArgument,

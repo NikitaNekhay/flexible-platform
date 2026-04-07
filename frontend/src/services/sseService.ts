@@ -28,6 +28,8 @@ class SSEService {
   private onEvent: SSEEventCallback | null = null;
   private onStatus: SSEStatusCallback | null = null;
   private parseFailures = 0;
+  /** Set to true when the server sends the `done` event (normal stream close). Prevents reconnection. */
+  private completed = false;
 
   connect(
     executionId: string,
@@ -40,6 +42,7 @@ class SSEService {
     this.onStatus = onStatus;
     this.reconnectAttempts = 0;
     this.parseFailures = 0;
+    this.completed = false;
 
     window.addEventListener('online', this.handleOnline);
     window.addEventListener('offline', this.handleOffline);
@@ -56,7 +59,9 @@ class SSEService {
 
     this.source = new EventSource(`/api/v1/executions/${this.executionId}/stream`);
 
-    SSE_EVENTS.forEach((eventName) => {
+    // All events except `done` — dispatch to Redux store
+    const liveEvents = SSE_EVENTS.filter((e) => e !== 'done') as Exclude<typeof SSE_EVENTS[number], 'done'>[];
+    liveEvents.forEach((eventName) => {
       this.source!.addEventListener(eventName, (e: MessageEvent) => {
         try {
           const data = JSON.parse(e.data);
@@ -76,12 +81,32 @@ class SSEService {
       });
     });
 
+    // `done` — server signals the stream is finished; close cleanly and never reconnect
+    this.source.addEventListener('done', (e: MessageEvent) => {
+      this.completed = true;
+      try {
+        const data = JSON.parse(e.data);
+        onEvent({ ...data, event: 'done' } as SSEEvent);
+      } catch {
+        // done payload may be empty — still dispatch so Redux can finalize status
+        onEvent({ event: 'done' } as SSEEvent);
+      }
+      // Actively close our end so onerror doesn't fire afterward
+      this.source?.close();
+      this.source = null;
+      onStatus('idle');
+    });
+
     this.source.onopen = () => {
       this.reconnectAttempts = 0;
       onStatus('connected');
     };
 
     this.source.onerror = () => {
+      // If the server closed the stream after `done`, this onerror is the connection EOF —
+      // do NOT reconnect; the execution is finished.
+      if (this.completed) return;
+
       this.source?.close();
       this.source = null;
       this.reconnectAttempts++;

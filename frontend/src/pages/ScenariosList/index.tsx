@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { modals } from '@mantine/modals';
 import { ScenariosTable } from './ScenariosTable';
-import type { Chain } from '@/types';
+import type { Chain, ChainCreatePayload } from '@/types';
 
 export default function ScenariosListPage() {
   const { t } = useTranslation();
@@ -41,8 +41,10 @@ export default function ScenariosListPage() {
                 title: t('editor:yaml_import.title'),
                 size: 'xl',
                 innerProps: {
-                  onImport: (chainData: Chain) => {
-                    navigate(`/editor/${chainData.id}`);
+                  // Navigate to /editor/new with the parsed chain as navigation state.
+                  // The editor seeds itself from state.initialChain on mount.
+                  onImport: (chainData: ChainCreatePayload) => {
+                    navigate('/editor/new', { state: { initialChain: chainData } });
                   },
                 },
               });

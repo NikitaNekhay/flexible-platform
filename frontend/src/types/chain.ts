@@ -43,13 +43,17 @@ export interface UploadAction {
   upload: {
     local_path?: string;
     remote_path: string;
+    execute?: boolean;
   };
 }
 
+// Nested under "sliver_rpc" key — matches backend Action.RPCAction json:"sliver_rpc"
 export interface SliverRpcAction {
   type: 'sliver_rpc';
-  rpc_method: string;
-  params: Record<string, unknown>;
+  sliver_rpc: {
+    method: string;
+    params: Record<string, string>;
+  };
 }
 
 export interface PythonAction {
@@ -81,12 +85,28 @@ export type StepAction =
   | PythonAction
   | ProbeAction;
 
-export type OnFailBehavior = 'stop' | 'continue' | 'skip_dependents';
+// Backend FailPolicy values: abort | continue | continue_no_err | skip_dependents
+export type OnFailBehavior = 'abort' | 'continue' | 'continue_no_err' | 'skip_dependents';
 
+// Matches backend Condition struct: var/op/value/negate
 export interface StepCondition {
-  variable: string;
-  operator: 'eq' | 'neq' | 'contains' | 'regex';
+  var: string;
+  op: 'eq' | 'neq' | 'contains' | 'matches' | 'gt' | 'lt';
   value: string;
+  negate?: boolean;
+}
+
+// Matches backend OutputFilter struct
+export interface OutputFilter {
+  regex: string;
+  group?: number;
+}
+
+// Matches backend OutputCapture struct
+export interface OutputCapture {
+  var: string;
+  regex: string;
+  group?: number;
 }
 
 export interface Step {
@@ -95,7 +115,11 @@ export interface Step {
   depends_on: string[];
   action: StepAction;
   conditions?: StepCondition[];
-  output_vars?: string[];
+  // Single variable name — backend field is output_var (string), not output_vars (array)
+  output_var?: string;
+  output_filter?: OutputFilter;
+  output_extract?: OutputCapture[];
+  timeout?: string; // e.g. "30s", "5m"
   on_fail: OnFailBehavior;
 }
 

@@ -9,8 +9,7 @@ function makeStep(id: string, deps: string[] = []): Step {
     depends_on: deps,
     action: { type: 'command', command: { interpreter: 'sh', cmd: 'echo' } },
     conditions: [],
-    output_vars: [],
-    on_fail: 'stop',
+    on_fail: 'abort',
   };
 }
 

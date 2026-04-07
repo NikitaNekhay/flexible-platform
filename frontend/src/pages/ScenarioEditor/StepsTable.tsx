@@ -91,7 +91,7 @@ function SortableRow({ step, index, onEdit, onDuplicate, onDelete, canEdit }: So
       <Table.Td>
         <Badge
           size="xs"
-          color={step.on_fail === 'stop' ? 'red' : step.on_fail === 'continue' ? 'green' : 'lime'}
+          color={step.on_fail === 'abort' ? 'red' : step.on_fail === 'continue' || step.on_fail === 'continue_no_err' ? 'green' : 'lime'}
           variant="light"
         >
           {step.on_fail}

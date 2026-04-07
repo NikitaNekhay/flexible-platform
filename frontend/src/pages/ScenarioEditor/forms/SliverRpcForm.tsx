@@ -7,12 +7,13 @@ interface SliverRpcFormProps {
 }
 
 export function SliverRpcForm({ value, onChange }: SliverRpcFormProps) {
-  const paramsStr = JSON.stringify(value.params ?? {}, null, 2);
+  const rpc = value.sliver_rpc ?? { method: '', params: {} };
+  const paramsStr = JSON.stringify(rpc.params ?? {}, null, 2);
 
   const handleParamsChange = (raw: string) => {
     try {
       const parsed = JSON.parse(raw);
-      onChange({ ...value, params: parsed });
+      onChange({ ...value, sliver_rpc: { ...rpc, params: parsed } });
     } catch {
       // Don't update state on invalid JSON — user is still typing
     }
@@ -22,12 +23,12 @@ export function SliverRpcForm({ value, onChange }: SliverRpcFormProps) {
     <Stack gap="sm">
       <TextInput
         label="RPC Method"
-        value={value.rpc_method}
-        onChange={(e) => onChange({ ...value, rpc_method: e.currentTarget.value })}
-        placeholder="e.g. Execute"
+        value={rpc.method}
+        onChange={(e) => onChange({ ...value, sliver_rpc: { ...rpc, method: e.currentTarget.value } })}
+        placeholder="e.g. Ps, Screenshot, Ifconfig, Netstat"
       />
       <Textarea
-        label="Params (JSON)"
+        label="Params (JSON object)"
         value={paramsStr}
         onChange={(e) => handleParamsChange(e.currentTarget.value)}
         minRows={4}

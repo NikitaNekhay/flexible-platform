@@ -145,7 +145,7 @@ export function EditorToolbar() {
               id: `${atomic.technique_id}_${testIndex}_${v4Fallback()}`,
               name: `${atomic.technique_id} — ${test?.name ?? ''}`,
               depends_on: [],
-              on_fail: 'stop',
+              on_fail: 'abort',
               action: {
                 type: 'atomic',
                 atomic_ref: {

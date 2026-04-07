@@ -4,7 +4,6 @@ import {
   Stack,
   TextInput,
   Select,
-  TagsInput,
   Button,
   Group,
   SegmentedControl,
@@ -13,12 +12,15 @@ import {
   Center,
   Text,
   Badge,
+  Switch,
+  NumberInput,
+  ActionIcon,
 } from '@mantine/core';
-import { IconAlertCircle, IconForms, IconCode } from '@tabler/icons-react';
+import { IconAlertCircle, IconForms, IconCode, IconPlus, IconTrash } from '@tabler/icons-react';
 import { yaml as yamlLang } from '@codemirror/lang-yaml';
 import { useTranslation } from 'react-i18next';
 import type { ContextModalProps } from '@mantine/modals';
-import type { Step, StepAction, ActionType, StepCondition } from '@/types';
+import type { Step, StepAction, ActionType, StepCondition, OutputCapture } from '@/types';
 import { useStepForm } from '@/hooks/useStepForm';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { addStep, updateStep } from '@/store/slices/editorSlice';
@@ -53,7 +55,7 @@ function getDefaultAction(type: ActionType): StepAction {
     case 'upload':
       return { type: 'upload', upload: { remote_path: '' } };
     case 'sliver_rpc':
-      return { type: 'sliver_rpc', rpc_method: '', params: {} };
+      return { type: 'sliver_rpc', sliver_rpc: { method: '', params: {} } };
     case 'python':
       return { type: 'python', python: { inline: '' } };
     case 'probe':
@@ -73,6 +75,15 @@ function ActionSubForm({ action, onChange }: { action: StepAction; onChange: (a:
   }
 }
 
+const CONDITION_OPERATORS = [
+  { value: 'eq',       label: 'eq — exact match' },
+  { value: 'neq',      label: 'neq — not equal' },
+  { value: 'contains', label: 'contains — substring' },
+  { value: 'matches',  label: 'matches — regex' },
+  { value: 'gt',       label: 'gt — greater than' },
+  { value: 'lt',       label: 'lt — less than' },
+];
+
 export function StepEditorModal({
   context,
   id,
@@ -83,9 +94,10 @@ export function StepEditorModal({
   const existingIds = useAppSelector((s) => s.editor.steps.map((step) => step.id));
   const form = useStepForm(innerProps.step);
 
+  const [activeTab, setActiveTab] = useState('general');
   const [viewMode, setViewMode] = useState<'form' | 'yaml'>('form');
   const [yamlText, setYamlText] = useState(() => stepToYAML(innerProps.step ?? {
-    id: '', name: '', depends_on: [], on_fail: 'stop',
+    id: '', name: '', depends_on: [], on_fail: 'abort',
     action: getDefaultAction('command'),
   } as Step));
   const [yamlError, setYamlError] = useState<string | null>(null);
@@ -106,7 +118,6 @@ export function StepEditorModal({
       setViewMode('form');
     } catch (e) {
       setYamlError(e instanceof Error ? e.message : 'YAML parse error');
-      // stay in yaml mode so user can fix it
     }
   };
 
@@ -124,7 +135,7 @@ export function StepEditorModal({
   const handleConditionAdd = () => {
     form.setFieldValue('conditions', [
       ...(form.values.conditions ?? []),
-      { variable: '', operator: 'eq' as const, value: '' },
+      { var: '', op: 'eq' as const, value: '', negate: false },
     ]);
   };
 
@@ -134,14 +145,29 @@ export function StepEditorModal({
     form.setFieldValue('conditions', conditions);
   };
 
+  const handleOutputExtractAdd = () => {
+    form.setFieldValue('output_extract', [
+      ...(form.values.output_extract ?? []),
+      { var: '', regex: '', group: 1 },
+    ]);
+  };
+
+  const handleOutputExtractRemove = (index: number) => {
+    const items = [...(form.values.output_extract ?? [])];
+    items.splice(index, 1);
+    form.setFieldValue('output_extract', items);
+  };
+
   const handleSubmitForm = (values: Step) => {
     if (innerProps.isNew) {
       if (!isValidStepId(values.id)) {
         form.setFieldError('id', 'Step ID must contain only letters, numbers, underscores, dots, or hyphens');
+        setActiveTab('general');
         return;
       }
       if (existingIds.includes(values.id)) {
         form.setFieldError('id', t('editor:validation.duplicate_id', { id: values.id }));
+        setActiveTab('general');
         return;
       }
       dispatch(addStep(values));
@@ -149,6 +175,25 @@ export function StepEditorModal({
       dispatch(updateStep(values));
     }
     context.closeModal(id);
+  };
+
+  // Manual validate + smart tab switch on error (fixes: errors on hidden tab go unseen)
+  const handleFormCreate = () => {
+    const { hasErrors } = form.validate();
+    if (hasErrors) {
+      const keys = Object.keys(form.errors);
+      if (keys.some((k) => ['id', 'name', 'on_fail', 'depends_on'].includes(k))) {
+        setActiveTab('general');
+      } else if (keys.some((k) => k.startsWith('action'))) {
+        setActiveTab('action');
+      } else if (keys.some((k) => k.startsWith('conditions'))) {
+        setActiveTab('conditions');
+      } else {
+        setActiveTab('output');
+      }
+      return;
+    }
+    handleSubmitForm(form.values);
   };
 
   const handleSubmitYAML = () => {
@@ -203,8 +248,8 @@ export function StepEditorModal({
 
       {/* ── FORM VIEW ─────────────────────────────────────── */}
       {viewMode === 'form' && (
-        <form onSubmit={form.onSubmit(handleSubmitForm as any)}>
-          <Tabs defaultValue="general">
+        <Stack gap="sm">
+          <Tabs value={activeTab} onChange={(v) => v && setActiveTab(v)}>
             <Tabs.List>
               <Tabs.Tab value="general">{t('editor:step_modal.tab_general')}</Tabs.Tab>
               <Tabs.Tab value="action">{t('editor:step_modal.tab_action')}</Tabs.Tab>
@@ -237,6 +282,11 @@ export function StepEditorModal({
                   onChange={(v) => form.setFieldValue('depends_on', v)}
                   currentStepId={form.values.id}
                 />
+                <TextInput
+                  label="Timeout"
+                  placeholder="e.g. 30s, 5m (leave empty for default 60s)"
+                  {...form.getInputProps('timeout')}
+                />
               </Stack>
             </Tabs.Panel>
 
@@ -259,20 +309,21 @@ export function StepEditorModal({
                   <Group key={i} grow align="flex-end">
                     <TextInput
                       label="Variable"
-                      value={cond.variable}
+                      placeholder="e.g. victim_os"
+                      value={cond.var}
                       onChange={(e) => {
                         const conditions = [...(form.values.conditions ?? [])];
-                        conditions[i] = { ...conditions[i], variable: e.currentTarget.value };
+                        conditions[i] = { ...conditions[i], var: e.currentTarget.value };
                         form.setFieldValue('conditions', conditions);
                       }}
                     />
                     <Select
                       label="Operator"
-                      data={['eq', 'neq', 'contains', 'regex']}
-                      value={cond.operator}
+                      data={CONDITION_OPERATORS}
+                      value={cond.op}
                       onChange={(v) => {
                         const conditions = [...(form.values.conditions ?? [])];
-                        conditions[i] = { ...conditions[i], operator: (v ?? 'eq') as StepCondition['operator'] };
+                        conditions[i] = { ...conditions[i], op: (v ?? 'eq') as StepCondition['op'] };
                         form.setFieldValue('conditions', conditions);
                       }}
                       allowDeselect={false}
@@ -280,6 +331,7 @@ export function StepEditorModal({
                     />
                     <TextInput
                       label="Value"
+                      placeholder="e.g. Linux"
                       value={cond.value}
                       onChange={(e) => {
                         const conditions = [...(form.values.conditions ?? [])];
@@ -287,36 +339,93 @@ export function StepEditorModal({
                         form.setFieldValue('conditions', conditions);
                       }}
                     />
-                    <Button variant="subtle" color="red" size="xs" onClick={() => handleConditionRemove(i)}>
-                      Remove
-                    </Button>
+                    <Switch
+                      label="Negate"
+                      checked={cond.negate ?? false}
+                      onChange={(e) => {
+                        const conditions = [...(form.values.conditions ?? [])];
+                        conditions[i] = { ...conditions[i], negate: e.currentTarget.checked };
+                        form.setFieldValue('conditions', conditions);
+                      }}
+                    />
+                    <ActionIcon variant="subtle" color="red" size="sm" onClick={() => handleConditionRemove(i)}>
+                      <IconTrash size={14} />
+                    </ActionIcon>
                   </Group>
                 ))}
-                <Button variant="light" size="xs" onClick={handleConditionAdd}>
+                <Button variant="light" size="xs" leftSection={<IconPlus size={14} />} onClick={handleConditionAdd}>
                   Add Condition
                 </Button>
               </Stack>
             </Tabs.Panel>
 
             <Tabs.Panel value="output" pt="md">
-              <TagsInput
-                label={t('editor:step_modal.tab_output')}
-                value={form.values.output_vars ?? []}
-                onChange={(v) => form.setFieldValue('output_vars', v)}
-                placeholder="Add variable name and press Enter"
-              />
+              <Stack gap="sm">
+                <TextInput
+                  label="Output Variable (output_var)"
+                  placeholder="e.g. victim_os — captures full stdout as this variable"
+                  value={form.values.output_var ?? ''}
+                  onChange={(e) => form.setFieldValue('output_var', e.currentTarget.value)}
+                />
+
+                <Stack gap="xs">
+                  <Text size="sm" fw={500}>Output Extract (output_extract)</Text>
+                  <Text size="xs" c="dimmed">Extract multiple named variables from stdout using regex capture groups.</Text>
+                  {(form.values.output_extract ?? []).map((item: OutputCapture, i: number) => (
+                    <Group key={i} grow align="flex-end">
+                      <TextInput
+                        label="Var name"
+                        placeholder="e.g. uid"
+                        value={item.var}
+                        onChange={(e) => {
+                          const items = [...(form.values.output_extract ?? [])];
+                          items[i] = { ...items[i], var: e.currentTarget.value };
+                          form.setFieldValue('output_extract', items);
+                        }}
+                      />
+                      <TextInput
+                        label="Regex"
+                        placeholder={`e.g. uid=(\\d+)`}
+                        value={item.regex}
+                        onChange={(e) => {
+                          const items = [...(form.values.output_extract ?? [])];
+                          items[i] = { ...items[i], regex: e.currentTarget.value };
+                          form.setFieldValue('output_extract', items);
+                        }}
+                      />
+                      <NumberInput
+                        label="Group"
+                        placeholder="1"
+                        min={1}
+                        value={item.group ?? 1}
+                        onChange={(v) => {
+                          const items = [...(form.values.output_extract ?? [])];
+                          items[i] = { ...items[i], group: typeof v === 'number' ? v : 1 };
+                          form.setFieldValue('output_extract', items);
+                        }}
+                      />
+                      <ActionIcon variant="subtle" color="red" size="sm" onClick={() => handleOutputExtractRemove(i)}>
+                        <IconTrash size={14} />
+                      </ActionIcon>
+                    </Group>
+                  ))}
+                  <Button variant="light" size="xs" leftSection={<IconPlus size={14} />} onClick={handleOutputExtractAdd}>
+                    Add Extract Rule
+                  </Button>
+                </Stack>
+              </Stack>
             </Tabs.Panel>
           </Tabs>
 
-          <Group justify="flex-end" mt="xl">
+          <Group justify="flex-end" mt="md">
             <Button variant="default" onClick={() => context.closeModal(id)}>
               {t('actions.cancel')}
             </Button>
-            <Button type="submit">
+            <Button onClick={handleFormCreate}>
               {innerProps.isNew ? t('actions.create') : t('actions.save')}
             </Button>
           </Group>
-        </form>
+        </Stack>
       )}
 
       {/* ── YAML VIEW ─────────────────────────────────────── */}

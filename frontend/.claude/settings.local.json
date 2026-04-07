@@ -19,7 +19,8 @@
       "Bash(curl -s http://localhost:18080/api/v1/health)",
       "Bash(docker exec:*)",
       "Bash(npx vitest:*)",
-      "Bash(chmod +x:*)"
+      "Bash(chmod +x:*)",
+      "Bash(xargs grep:*)"
     ]
   }
 }
