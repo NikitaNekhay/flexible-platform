@@ -124,6 +124,8 @@ export interface Step {
   output_extract?: OutputCapture[];
   timeout?: string; // e.g. "30s", "5m"
   on_fail: OnFailBehavior;
+  // Per-step session override — supports {{VarName}} substitution
+  session_id?: string;
 }
 
 export interface Chain {

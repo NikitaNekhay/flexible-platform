@@ -33,6 +33,7 @@ const stepSchema = z.object({
     group: z.number().optional(),
   })).optional(),
   timeout: z.string().optional(),
+  session_id: z.string().optional(),
 });
 
 const DEFAULT_ACTION: StepAction = {
@@ -53,6 +54,7 @@ export function useStepForm(initial?: Step) {
       output_extract: [],
       timeout: '',
       on_fail: 'abort' as OnFailBehavior,
+      session_id: '',
     },
   });
 }

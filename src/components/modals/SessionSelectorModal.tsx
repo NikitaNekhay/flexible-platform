@@ -57,6 +57,23 @@ export function SessionSelectorModal({
     }
   };
 
+  const handleRunWithoutSession = async () => {
+    const result = await executeChain({
+      id: innerProps.chainId,
+      body: { session_id: '00000000-0000-0000-0000-000000000000', dry_run: false },
+    });
+    if ('data' in result && result.data) {
+      context.closeModal(id);
+      innerProps.onSelected(result.data.execution_id);
+    } else {
+      notifications.show({
+        title: 'Execution failed',
+        message: 'Could not start execution without session',
+        color: 'red',
+      });
+    }
+  };
+
   return (
     <Stack gap="md">
       <Text size="sm" c="dimmed">
@@ -114,6 +131,15 @@ export function SessionSelectorModal({
       <Group justify="flex-end">
         <Button variant="default" onClick={() => context.closeModal(id)}>
           {t('actions.cancel')}
+        </Button>
+        <Button
+          variant="light"
+          color="orange"
+          onClick={handleRunWithoutSession}
+          loading={isExecuting}
+          title="For chains that capture their own session (e.g. initial-access chains)"
+        >
+          Run without session
         </Button>
         <Button onClick={handleConfirm} disabled={!selectedId} loading={isExecuting}>
           {t('execution:select_session.confirm')}
