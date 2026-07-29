@@ -19,6 +19,7 @@ import {
 import { IconAlertCircle, IconForms, IconCode, IconPlus, IconTrash } from '@tabler/icons-react';
 import { yaml as yamlLang } from '@codemirror/lang-yaml';
 import { useTranslation } from 'react-i18next';
+import { useGetSessionsQuery } from '@/store/api/sessionsApi';
 import type { ContextModalProps } from '@mantine/modals';
 import type { Step, StepAction, ActionType, StepCondition, OutputCapture } from '@/types';
 import { useStepForm } from '@/hooks/useStepForm';
@@ -84,6 +85,32 @@ const CONDITION_OPERATORS = [
   { value: 'lt',       label: 'lt — less than' },
 ];
 
+// Session picker — loads live sessions and renders as a Select dropdown
+function SessionOverrideSelect({ value, onChange }: { value: string; onChange: (v: string | null) => void }) {
+  const { t } = useTranslation();
+  const { data: sessions = [] } = useGetSessionsQuery(undefined, { pollingInterval: 5000 });
+  const options = [
+    { value: '', label: '— chain default (no override) —' },
+    ...sessions.map((s) => ({
+      value: s.id,
+      label: `${s.os.toUpperCase()} · ${s.hostname} · ${s.username} · pid:${s.pid}`,
+    })),
+  ];
+  return (
+    <Select
+      label="Session Override (session_id)"
+      description="Override the target session for this step only. Leave empty to use the chain-level session."
+      placeholder="— chain default —"
+      data={options}
+      value={value || ''}
+      onChange={onChange}
+      clearable
+      searchable
+      comboboxProps={{ withinPortal: false }}
+    />
+  );
+}
+
 export function StepEditorModal({
   context,
   id,
@@ -92,7 +119,11 @@ export function StepEditorModal({
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const existingIds = useAppSelector((s) => s.editor.steps.map((step) => step.id));
-  const form = useStepForm(innerProps.step);
+  const form = useStepForm(innerProps.step ? {
+    ...innerProps.step,
+    on_fail: innerProps.step.on_fail || 'abort',
+    session_id: innerProps.step.session_id || '',
+  } : undefined);
 
   const [activeTab, setActiveTab] = useState('general');
   const [viewMode, setViewMode] = useState<'form' | 'yaml'>('form');
@@ -286,6 +317,10 @@ export function StepEditorModal({
                   label="Timeout"
                   placeholder="e.g. 30s, 5m (leave empty for default 60s)"
                   {...form.getInputProps('timeout')}
+                />
+                <SessionOverrideSelect
+                  value={form.values.session_id ?? ''}
+                  onChange={(v) => form.setFieldValue('session_id', v ?? '')}
                 />
               </Stack>
             </Tabs.Panel>
