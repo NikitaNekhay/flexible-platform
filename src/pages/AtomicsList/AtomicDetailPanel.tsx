@@ -60,7 +60,7 @@ function TestCard({ test, index, onAdd }: { test: AtomicTest; index: number; onA
           <Text size="xs" fw={600} c="dimmed" mb={4} tt="uppercase">
             Input Arguments
           </Text>
-          <Table size="xs" withTableBorder withColumnBorders>
+          <Table withTableBorder withColumnBorders>
             <Table.Thead>
               <Table.Tr>
                 <Table.Th>Name</Table.Th>
