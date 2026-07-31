@@ -87,7 +87,6 @@ const CONDITION_OPERATORS = [
 
 // Session picker — loads live sessions and renders as a Select dropdown
 function SessionOverrideSelect({ value, onChange }: { value: string; onChange: (v: string | null) => void }) {
-  const { t } = useTranslation();
   const { data: sessions = [] } = useGetSessionsQuery(undefined, { pollingInterval: 5000 });
   const options = [
     { value: '', label: '— chain default (no override) —' },
